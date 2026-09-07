@@ -80,7 +80,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: hostCtrl,
                   decoration: const InputDecoration(
                     labelText: 'Dirección (IP o dominio)',
-                    hintText: 'Ej: 192.168.1.8',
+                    hintText: 'Ej: lubricantes-arca-api.onrender.com',
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -101,7 +101,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     alignment: Alignment.centerLeft,
                     child: Text(
                       status,
-                      style: const TextStyle(fontSize: 12, color: Color(0xFF3E4756)),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF3E4756),
+                      ),
                     ),
                   ),
                 ],
@@ -115,8 +118,9 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             TextButton(
               onPressed: () async {
-                final host =
-                    hostCtrl.text.trim().isEmpty ? '127.0.0.1' : hostCtrl.text.trim();
+                final host = hostCtrl.text.trim().isEmpty
+                    ? '127.0.0.1'
+                    : hostCtrl.text.trim();
                 final port = int.tryParse(portCtrl.text.trim()) ?? 8000;
                 final ok = await testServerConnectionWith(
                   host: host,
@@ -135,8 +139,9 @@ class _LoginScreenState extends State<LoginScreen> {
             ElevatedButton(
               onPressed: () async {
                 final nueva = ServerConfig();
-                nueva.host =
-                    hostCtrl.text.trim().isEmpty ? '127.0.0.1' : hostCtrl.text.trim();
+                nueva.host = hostCtrl.text.trim().isEmpty
+                    ? '127.0.0.1'
+                    : hostCtrl.text.trim();
                 nueva.port = int.tryParse(portCtrl.text.trim()) ?? 8000;
                 nueva.enableHttps = https;
                 await saveServerConfig(nueva);
@@ -169,12 +174,20 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Icon(Icons.oil_barrel, size: 56, color: Color(0xFF0A2540)),
+                const Icon(
+                  Icons.oil_barrel,
+                  size: 56,
+                  color: Color(0xFF0A2540),
+                ),
                 const SizedBox(height: 16),
                 const Text(
                   'Lubricantes Arca',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700, color: Color(0xFF0A2540)),
+                  style: TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF0A2540),
+                  ),
                 ),
                 const SizedBox(height: 8),
                 const Text(
@@ -188,7 +201,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   decoration: InputDecoration(
                     labelText: 'Usuario',
                     prefixIcon: const Icon(Icons.person_outline),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -199,9 +214,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   decoration: InputDecoration(
                     labelText: 'Contraseña',
                     prefixIcon: const Icon(Icons.lock_outline),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     suffixIcon: IconButton(
-                      icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
+                      icon: Icon(
+                        _obscure ? Icons.visibility_off : Icons.visibility,
+                      ),
                       onPressed: () => setState(() => _obscure = !_obscure),
                     ),
                   ),
@@ -218,7 +237,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       ? const SizedBox(
                           height: 20,
                           width: 20,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
                         )
                       : const Text('Ingresar'),
                 ),
@@ -226,7 +248,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 Text(
                   'Servidor: ${apiBaseUrl()}',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: Color(0xFF6A7788), fontSize: 12),
+                  style: const TextStyle(
+                    color: Color(0xFF6A7788),
+                    fontSize: 12,
+                  ),
                 ),
                 TextButton.icon(
                   onPressed: _configurarServidor,

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart' as paths;
 
@@ -12,23 +11,26 @@ import 'package:path_provider/path_provider.dart' as paths;
 /// `lubricantes_arca_config.json` dentro de Documentos. Así se cambia
 /// fácilmente para Windows o para celulares Android (red Wi-Fi local).
 class ServerConfig {
+  static const cloudHost = 'lubricantes-arca-api.onrender.com';
+  static const cloudPort = 443;
+  static const cloudHttps = true;
+
   String host = _defaultHost();
-  int port = 8000;
-  bool enableHttps = false;
+  int port = _defaultPort();
+  bool enableHttps = _defaultHttps();
   static ServerConfig? instance;
 
-  /// URL base p.ej. http://192.168.1.8:8000 (sin barra final).
-  /// La IP debe coincidir con la IP LAN actual de la PC servidora.
+  /// URL base del backend publicado en Render (sin barra final).
   String get baseUrl => '${enableHttps ? 'https' : 'http'}://$host:$port';
 
   /// Host por defecto según plataforma.
   static String _defaultHost() {
-    if (kIsWeb) return 'localhost';
-    // IP LAN actual de la PC servidora. Para que no cambie, reservar esta IP
-    // en el router mediante DHCP Reservation/Static Lease.
-    if (Platform.isAndroid) return '192.168.1.8';
-    return '127.0.0.1';
+    return cloudHost;
   }
+
+  static int _defaultPort() => cloudPort;
+
+  static bool _defaultHttps() => cloudHttps;
 
   Map<String, dynamic> toJson() => {
     'host': host,
@@ -51,9 +53,29 @@ Future<void> initServerConfig() async {
     final file = File('$dir/lubricantes_arca_config.json');
     if (await file.exists()) {
       final map = jsonDecode(await file.readAsString()) as Map<String, dynamic>;
-      cfg.host = (map['host'] as String?) ?? cfg.host;
-      cfg.port = (map['port'] as int?) ?? cfg.port;
-      cfg.enableHttps = (map['enableHttps'] as bool?) ?? cfg.enableHttps;
+      final savedHost = map['host'] as String?;
+      final savedPort = map['port'] as int?;
+      final savedHttps = map['enableHttps'] as bool?;
+
+      // Las versiones anteriores guardaban la IP local o una URL temporal de
+      // Cloudflare. Se reemplazan una sola vez por Render para que el usuario
+      // no tenga que reconfigurar cada dispositivo.
+      final isLegacyServer =
+          savedHost == null ||
+          savedHost == 'localhost' ||
+          savedHost == '127.0.0.1' ||
+          savedHost == '192.168.1.8' ||
+          savedHost.endsWith('.trycloudflare.com');
+      if (isLegacyServer) {
+        cfg.host = ServerConfig.cloudHost;
+        cfg.port = ServerConfig.cloudPort;
+        cfg.enableHttps = ServerConfig.cloudHttps;
+        await file.writeAsString(jsonEncode(cfg.toJson()));
+      } else {
+        cfg.host = savedHost;
+        cfg.port = savedPort ?? cfg.port;
+        cfg.enableHttps = savedHttps ?? cfg.enableHttps;
+      }
     }
   } catch (_) {
     // Sin acceso a documentos (p.ej. web): se usan los valores por defecto.
