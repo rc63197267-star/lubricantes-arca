@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: lubricantes-arca-api
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: DB_HOST
+        value: aws-0-us-east-2.pooler.supabase.com
+      - key: DB_PORT
+        value: "5432"
+      - key: DB_USER
+        value: postgres.yxnmcpcycejkoiriisag
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        value: postgres
+      - key: DB_SSLMODE
+        value: require
+      - key: SUPABASE_URL
+        value: https://yxnmcpcycejkoiriisag.supabase.co
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_STORAGE_BUCKET
+        value: product-images
