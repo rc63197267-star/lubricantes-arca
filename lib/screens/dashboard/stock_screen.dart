@@ -98,6 +98,7 @@ class _StockScreenState extends State<StockScreen> {
       ),
     );
   }
+
   Widget _buildContent(BuildContext context, List<Product> products) {
     final width = MediaQuery.of(context).size.width;
     final isPhone = width < 600;
@@ -111,7 +112,8 @@ class _StockScreenState extends State<StockScreen> {
       (sum, p) => sum + (double.tryParse(p.precioCompra) ?? 0) * p.stock,
     );
 
-    final sorted = [...products]..sort((a, b) {
+    final sorted = [...products]
+      ..sort((a, b) {
         final aLow = _isLow(a) ? 0 : 1;
         final bLow = _isLow(b) ? 0 : 1;
         if (aLow != bLow) return aLow - bLow;
@@ -166,8 +168,7 @@ class _StockScreenState extends State<StockScreen> {
                       ),
                       child: const Row(
                         children: [
-                          Icon(Icons.refresh_rounded,
-                              color: Color(0xFF0A2540)),
+                          Icon(Icons.refresh_rounded, color: Color(0xFF0A2540)),
                           SizedBox(width: 8),
                           Text(
                             'Actualizar',
@@ -189,8 +190,11 @@ class _StockScreenState extends State<StockScreen> {
               crossAxisCount: crossAxisCount,
               mainAxisSpacing: 12,
               crossAxisSpacing: 12,
-              childAspectRatio:
-                  width >= 900 ? 1.8 : width >= 600 ? 1.45 : 1.35,
+              childAspectRatio: width >= 900
+                  ? 1.8
+                  : width >= 600
+                  ? 1.45
+                  : 1.35,
               children: [
                 _SummaryTile(
                   label: 'Productos',
@@ -221,8 +225,12 @@ class _StockScreenState extends State<StockScreen> {
       ),
     );
   }
+
   Widget _buildInventoryList(
-      BuildContext context, List<Product> products, double width) {
+    BuildContext context,
+    List<Product> products,
+    double width,
+  ) {
     final compact = width < 400;
 
     return Container(
@@ -249,8 +257,7 @@ class _StockScreenState extends State<StockScreen> {
               ),
               Text(
                 '${products.length} productos',
-                style: const TextStyle(
-                    color: Color(0xFF6A7788), fontSize: 12),
+                style: const TextStyle(color: Color(0xFF6A7788), fontSize: 12),
               ),
             ],
           ),
@@ -311,7 +318,9 @@ class _StockScreenState extends State<StockScreen> {
                           '${p.stock} u.',
                           textAlign: TextAlign.center,
                           style: const TextStyle(
-                              color: Color(0xFF5A6471), fontSize: 12),
+                            color: Color(0xFF5A6471),
+                            fontSize: 12,
+                          ),
                         ),
                       ),
                       SizedBox(
@@ -320,13 +329,17 @@ class _StockScreenState extends State<StockScreen> {
                           'mín. ${p.stockMinimo}',
                           textAlign: TextAlign.center,
                           style: const TextStyle(
-                              color: Color(0xFF5A6471), fontSize: 12),
+                            color: Color(0xFF5A6471),
+                            fontSize: 12,
+                          ),
                         ),
                       ),
                     ],
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: critical
                             ? const Color(0xFFFEE2E2)
@@ -368,6 +381,7 @@ class _StockScreenState extends State<StockScreen> {
     );
   }
 }
+
 class _SummaryTile extends StatelessWidget {
   const _SummaryTile({
     required this.label,
@@ -389,7 +403,11 @@ class _SummaryTile extends StatelessWidget {
       builder: (context, constraints) {
         return Container(
           padding: EdgeInsets.all(
-            isSmall ? 12 : isDesktop ? 14 : 16,
+            isSmall
+                ? 12
+                : isDesktop
+                ? 14
+                : 16,
           ),
           decoration: BoxDecoration(
             color: Colors.white,
@@ -401,15 +419,27 @@ class _SummaryTile extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: isDesktop ? 30 : isSmall ? 28 : 36,
-                height: isDesktop ? 30 : isSmall ? 28 : 36,
+                width: isDesktop
+                    ? 30
+                    : isSmall
+                    ? 28
+                    : 36,
+                height: isDesktop
+                    ? 30
+                    : isSmall
+                    ? 28
+                    : 36,
                 decoration: BoxDecoration(
                   color: accent,
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
               SizedBox(
-                height: isDesktop ? 10 : isSmall ? 10 : 14,
+                height: isDesktop
+                    ? 10
+                    : isSmall
+                    ? 10
+                    : 14,
               ),
               SizedBox(
                 width: constraints.maxWidth,
@@ -420,7 +450,11 @@ class _SummaryTile extends StatelessWidget {
                     value,
                     maxLines: 1,
                     style: TextStyle(
-                      fontSize: isDesktop ? 18 : isSmall ? 18 : 22,
+                      fontSize: isDesktop
+                          ? 18
+                          : isSmall
+                          ? 18
+                          : 22,
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFF0A2540),
                     ),
@@ -433,7 +467,11 @@ class _SummaryTile extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: isDesktop ? 11 : isSmall ? 11 : 12,
+                  fontSize: isDesktop
+                      ? 11
+                      : isSmall
+                      ? 11
+                      : 12,
                   color: const Color(0xFF6A7788),
                 ),
               ),

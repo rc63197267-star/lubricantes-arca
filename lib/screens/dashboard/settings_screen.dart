@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/api_client.dart';
 import '../../services/server_config.dart';
+import '../../utils/input_rules.dart';
 
 class SettingsScreen extends StatefulWidget {
   final Usuario? usuario;
@@ -45,7 +46,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _serverStatus = '';
     });
     final cfg = ServerConfig();
-    cfg.host = _hostCtrl.text.trim().isEmpty ? '127.0.0.1' : _hostCtrl.text.trim();
+    cfg.host = _hostCtrl.text.trim().isEmpty
+        ? '127.0.0.1'
+        : _hostCtrl.text.trim();
     cfg.port = int.tryParse(_portCtrl.text.trim()) ?? 8000;
     final ok = await testServerConnectionWith(
       host: cfg.host,
@@ -63,7 +66,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _guardarServidor() async {
     final cfg = ServerConfig();
-    cfg.host = _hostCtrl.text.trim().isEmpty ? '127.0.0.1' : _hostCtrl.text.trim();
+    cfg.host = _hostCtrl.text.trim().isEmpty
+        ? '127.0.0.1'
+        : _hostCtrl.text.trim();
     cfg.port = int.tryParse(_portCtrl.text.trim()) ?? 8000;
     cfg.enableHttps = _https;
     await saveServerConfig(cfg);
@@ -90,41 +95,63 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Servidor (PC principal)',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF0A2540))),
+          const Text(
+            'Servidor (PC principal)',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF0A2540),
+            ),
+          ),
           const SizedBox(height: 4),
-          const Text('Dirección a la que se conectan la app y los celulares.',
-              style: TextStyle(color: Color(0xFF6A7788), fontSize: 12)),
+          const Text(
+            'Dirección a la que se conectan la app y los celulares.',
+            style: TextStyle(color: Color(0xFF6A7788), fontSize: 12),
+          ),
           const SizedBox(height: 12),
           TextField(
             controller: _hostCtrl,
             onChanged: (_) => setState(() => _serverStatus = ''),
             decoration: InputDecoration(
               labelText: 'Dirección del servidor',
-              hintText: 'IP local o dominio (ej: 192.168.1.100 o app.tudominio.com)',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              hintText:
+                  'IP local o dominio (ej: 192.168.1.100 o app.tudominio.com)',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
               isDense: true,
             ),
           ),
           const SizedBox(height: 10),
           TextField(
             controller: _portCtrl,
+            keyboardType: TextInputType.number,
+            inputFormatters: InputRules.digits,
             onChanged: (_) => setState(() => _serverStatus = ''),
             decoration: InputDecoration(
               labelText: 'Puerto de la API',
               hintText: 'Ej: 8000 (con HTTPS suele ser 443)',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
               isDense: true,
             ),
           ),
           const SizedBox(height: 4),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
-            title: const Text('Usar HTTPS (para ver desde Internet)',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF0A2540))),
+            title: const Text(
+              'Usar HTTPS (para ver desde Internet)',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF0A2540),
+              ),
+            ),
             subtitle: const Text(
-                'Actívalo si te conectas por un dominio seguro (ej. Cloudflare Tunnel).',
-                style: TextStyle(fontSize: 12, color: Color(0xFF6A7788))),
+              'Actívalo si te conectas por un dominio seguro (ej. Cloudflare Tunnel).',
+              style: TextStyle(fontSize: 12, color: Color(0xFF6A7788)),
+            ),
             value: _https,
             activeThumbColor: const Color(0xFF3B82F6),
             onChanged: (v) => setState(() {
@@ -154,7 +181,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           if (_serverStatus.isNotEmpty) ...[
             const SizedBox(height: 10),
-            Text(_serverStatus, style: const TextStyle(fontSize: 12, color: Color(0xFF3E4756))),
+            Text(
+              _serverStatus,
+              style: const TextStyle(fontSize: 12, color: Color(0xFF3E4756)),
+            ),
           ],
         ],
       ),
@@ -178,21 +208,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
               TextFormField(
                 controller: nombreCtrl,
                 decoration: const InputDecoration(labelText: 'Nombre'),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Requerido' : null,
+                inputFormatters: InputRules.personName,
+                validator: (v) =>
+                    (v == null || v.trim().isEmpty) ? 'Requerido' : null,
               ),
               TextFormField(
                 controller: usuarioCtrl,
-                decoration: const InputDecoration(labelText: 'Usuario (para login)'),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Requerido' : null,
+                decoration: const InputDecoration(
+                  labelText: 'Usuario (para login)',
+                ),
+                inputFormatters: InputRules.alphanumeric,
+                validator: (v) =>
+                    (v == null || v.trim().isEmpty) ? 'Requerido' : null,
               ),
               const SizedBox(height: 8),
-              const Text('Contraseña por defecto: 123456789',
-                  style: TextStyle(color: Color(0xFF6A7788), fontSize: 12)),
+              const Text(
+                'Contraseña por defecto: 123456789',
+                style: TextStyle(color: Color(0xFF6A7788), fontSize: 12),
+              ),
             ],
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
           ElevatedButton(
             onPressed: () async {
               if (!(formKey.currentState?.validate() ?? false)) return;
@@ -237,11 +278,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Configuración',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: Color(0xFF0A2540))),
+              const Text(
+                'Configuración',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF0A2540),
+                ),
+              ),
               const SizedBox(height: 6),
-              const Text('Tu cuenta y la gestión de usuarios del sistema.',
-                  style: TextStyle(color: Color(0xFF6A7788))),
+              const Text(
+                'Tu cuenta y la gestión de usuarios del sistema.',
+                style: TextStyle(color: Color(0xFF6A7788)),
+              ),
               const SizedBox(height: 20),
               Container(
                 padding: const EdgeInsets.all(16),
@@ -255,31 +304,49 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     const CircleAvatar(
                       radius: 24,
                       backgroundColor: Color(0xFFDBEAFE),
-                      child: Icon(Icons.person, size: 28, color: Color(0xFF0A2540)),
+                      child: Icon(
+                        Icons.person,
+                        size: 28,
+                        color: Color(0xFF0A2540),
+                      ),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(u?.nombre ?? 'Usuario',
-                              style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF0A2540))),
+                          Text(
+                            u?.nombre ?? 'Usuario',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF0A2540),
+                            ),
+                          ),
                           const SizedBox(height: 2),
-                          Text('@${u?.usuario ?? '-'}',
-                              style: const TextStyle(color: Color(0xFF6A7788))),
+                          Text(
+                            '@${u?.usuario ?? '-'}',
+                            style: const TextStyle(color: Color(0xFF6A7788)),
+                          ),
                         ],
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
                       decoration: BoxDecoration(
-                        color: _esAdmin ? const Color(0xFFE7F7ED) : const Color(0xFFDBEAFE),
+                        color: _esAdmin
+                            ? const Color(0xFFE7F7ED)
+                            : const Color(0xFFDBEAFE),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         _esAdmin ? 'ADMIN' : 'VENDEDOR',
                         style: TextStyle(
-                          color: _esAdmin ? const Color(0xFF228B57) : const Color(0xFF0A2540),
+                          color: _esAdmin
+                              ? const Color(0xFF228B57)
+                              : const Color(0xFF0A2540),
                           fontWeight: FontWeight.w700,
                           fontSize: 12,
                         ),
@@ -304,8 +371,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       Row(
                         children: [
                           const Expanded(
-                            child: Text('Gestión de usuarios',
-                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF0A2540))),
+                            child: Text(
+                              'Gestión de usuarios',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF0A2540),
+                              ),
+                            ),
                           ),
                           ElevatedButton.icon(
                             onPressed: _nuevoVendedor,
@@ -324,30 +397,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               child: Center(child: CircularProgressIndicator()),
                             );
                           }
-                          if (snap.hasError) return Text('Error: ${snap.error}');
+                          if (snap.hasError) {
+                            return Text('Error: ${snap.error}');
+                          }
                           final users = snap.data ?? [];
                           if (users.isEmpty) {
-                            return const Text('No hay usuarios.', style: TextStyle(color: Color(0xFF6A7788)));
+                            return const Text(
+                              'No hay usuarios.',
+                              style: TextStyle(color: Color(0xFF6A7788)),
+                            );
                           }
                           return Column(
-                            children: users.map((us) => ListTile(
-                              dense: true,
-                              contentPadding: EdgeInsets.zero,
-                              leading: Icon(
-                                us.esAdmin ? Icons.admin_panel_settings : Icons.person_outline,
-                                color: const Color(0xFF0A2540),
-                              ),
-                              title: Text(us.nombre),
-                              subtitle: Text('@${us.usuario}'),
-                              trailing: Text(
-                                us.rol,
-                                style: TextStyle(
-                                  color: us.esAdmin ? const Color(0xFF228B57) : const Color(0xFF6A7788),
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            )).toList(),
+                            children: users
+                                .map(
+                                  (us) => ListTile(
+                                    dense: true,
+                                    contentPadding: EdgeInsets.zero,
+                                    leading: Icon(
+                                      us.esAdmin
+                                          ? Icons.admin_panel_settings
+                                          : Icons.person_outline,
+                                      color: const Color(0xFF0A2540),
+                                    ),
+                                    title: Text(us.nombre),
+                                    subtitle: Text('@${us.usuario}'),
+                                    trailing: Text(
+                                      us.rol,
+                                      style: TextStyle(
+                                        color: us.esAdmin
+                                            ? const Color(0xFF228B57)
+                                            : const Color(0xFF6A7788),
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
                           );
                         },
                       ),

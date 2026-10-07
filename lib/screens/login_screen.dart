@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_client.dart';
 import '../services/server_config.dart';
+import '../utils/input_rules.dart';
 import 'dashboard/dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -88,6 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: portCtrl,
                   decoration: const InputDecoration(labelText: 'Puerto'),
                   keyboardType: TextInputType.number,
+                  inputFormatters: InputRules.digits,
                 ),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
@@ -198,6 +200,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 32),
                 TextField(
                   controller: _usuarioCtrl,
+                  inputFormatters: InputRules.alphanumeric,
                   decoration: InputDecoration(
                     labelText: 'Usuario',
                     prefixIcon: const Icon(Icons.person_outline),

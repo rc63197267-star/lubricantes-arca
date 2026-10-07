@@ -35,6 +35,7 @@ migrate_working_dir/
 
 # Secret configuration and local runtime files
 python_backend/.env
+python_backend/.env.local
 .runtime/
 
 # Symbolication related
@@ -47,3 +48,5 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+# Widget Preview related
+.widget_preview/

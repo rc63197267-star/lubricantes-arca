@@ -143,11 +143,15 @@ INSERT INTO `proveedores` (`id_proveedor`, `nombre`, `telefono`, `correo`, `dire
 CREATE TABLE `stock_movimientos` (
   `id_movimiento` int(11) NOT NULL,
   `id_producto` int(11) NOT NULL,
-  `tipo_movimiento` enum('ENTRADA','SALIDA','AJUSTE') NOT NULL,
+  `tipo_movimiento` enum('ENTRADA','SALIDA','AJUSTE','ALERTA') NOT NULL,
   `cantidad` int(11) NOT NULL,
+  `precio_compra` decimal(10,2) DEFAULT NULL,
+  `id_proveedor` int(11) DEFAULT NULL,
   `motivo` varchar(150) NOT NULL,
   `observacion` varchar(250) DEFAULT NULL,
-  `fecha` datetime NOT NULL DEFAULT current_timestamp()
+  `fecha` datetime NOT NULL DEFAULT current_timestamp(),
+  `stock_anterior` int(11) NOT NULL DEFAULT 0,
+  `stock_nuevo` int(11) NOT NULL DEFAULT 0
 ) ;
 
 --
@@ -192,6 +196,9 @@ CREATE TABLE `ventas` (
   `id_usuario` int(11) NOT NULL,
   `fecha` datetime NOT NULL DEFAULT current_timestamp(),
   `metodo_pago` enum('EFECTIVO','QR','TARJETA') NOT NULL,
+  `descuento` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `monto_recibido` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `cambio` decimal(10,2) NOT NULL DEFAULT 0.00,
   `total` decimal(10,2) NOT NULL,
   `estado` enum('COMPLETADA','ANULADA') NOT NULL DEFAULT 'COMPLETADA'
 ) ;
@@ -200,8 +207,8 @@ CREATE TABLE `ventas` (
 -- Volcado de datos para la tabla `ventas`
 --
 
-INSERT INTO `ventas` (`id_venta`, `numero_venta`, `id_cliente`, `id_usuario`, `fecha`, `metodo_pago`, `total`, `estado`) VALUES
-(1, 'V-000001', 1, 1, '2026-08-17 10:25:38', 'QR', 90.00, 'COMPLETADA');
+INSERT INTO `ventas` (`id_venta`, `numero_venta`, `id_cliente`, `id_usuario`, `fecha`, `metodo_pago`, `descuento`, `monto_recibido`, `cambio`, `total`, `estado`) VALUES
+(1, 'V-000001', 1, 1, '2026-08-17 10:25:38', 'QR', 0.00, 0.00, 0.00, 90.00, 'COMPLETADA');
 
 --
 -- Índices para tablas volcadas
@@ -339,7 +346,8 @@ ALTER TABLE `productos`
 -- Filtros para la tabla `stock_movimientos`
 --
 ALTER TABLE `stock_movimientos`
-  ADD CONSTRAINT `fk_movimiento_producto` FOREIGN KEY (`id_producto`) REFERENCES `productos` (`id_producto`);
+  ADD CONSTRAINT `fk_movimiento_producto` FOREIGN KEY (`id_producto`) REFERENCES `productos` (`id_producto`),
+  ADD CONSTRAINT `fk_movimiento_proveedor` FOREIGN KEY (`id_proveedor`) REFERENCES `proveedores` (`id_proveedor`);
 
 --
 -- Filtros para la tabla `ventas`

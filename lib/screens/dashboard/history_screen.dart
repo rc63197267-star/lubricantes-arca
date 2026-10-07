@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/api_client.dart';
+import '../../utils/input_rules.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -55,14 +56,28 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.cloud_off_rounded, size: 44, color: Color(0xFF6A7788)),
+                    const Icon(
+                      Icons.cloud_off_rounded,
+                      size: 44,
+                      color: Color(0xFF6A7788),
+                    ),
                     const SizedBox(height: 12),
-                    const Text('No se pudo cargar el historial',
-                        style: TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF0A2540))),
+                    const Text(
+                      'No se pudo cargar el historial',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF0A2540),
+                      ),
+                    ),
                     const SizedBox(height: 6),
-                    Text('${snapshot.error}',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(color: Color(0xFF6A7788), fontSize: 12)),
+                    Text(
+                      '${snapshot.error}',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Color(0xFF6A7788),
+                        fontSize: 12,
+                      ),
+                    ),
                     const SizedBox(height: 14),
                     ElevatedButton.icon(
                       onPressed: _reload,
@@ -94,14 +109,23 @@ class _HistoryScreenState extends State<HistoryScreen> {
             Row(
               children: [
                 const Expanded(
-                  child: Text('Historial',
-                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: Color(0xFF0A2540))),
+                  child: Text(
+                    'Historial',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF0A2540),
+                    ),
+                  ),
                 ),
                 if (!isPhone)
                   GestureDetector(
                     onTap: _showNewMovimientoDialog,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(12),
@@ -109,10 +133,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       ),
                       child: const Row(
                         children: [
-                          Icon(Icons.swap_vert_rounded, color: Color(0xFF0A2540)),
+                          Icon(
+                            Icons.swap_vert_rounded,
+                            color: Color(0xFF0A2540),
+                          ),
                           SizedBox(width: 8),
-                          Text('Nuevo movimiento',
-                              style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF0A2540))),
+                          Text(
+                            'Nuevo movimiento',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF0A2540),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -151,8 +183,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 24),
                       child: Center(
-                        child: Text('No hay movimientos registrados',
-                            style: TextStyle(color: Color(0xFF6A7788))),
+                        child: Text(
+                          'No hay movimientos registrados',
+                          style: TextStyle(color: Color(0xFF6A7788)),
+                        ),
                       ),
                     )
                   else
@@ -201,7 +235,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
         ? 'Stock: ${m.stockAnterior} → ${m.stockNuevo}'
         : null;
 
-    final motivoTxt = m.tipo == 'ALERTA' ? (m.observacion ?? m.motivo) : m.motivo;
+    final motivoTxt = m.tipo == 'ALERTA'
+        ? (m.observacion ?? m.motivo)
+        : m.motivo;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -211,39 +247,91 @@ class _HistoryScreenState extends State<HistoryScreen> {
           Container(
             width: compact ? 34 : 40,
             height: compact ? 34 : 40,
-            decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(10)),
-            child: Icon(icon, size: compact ? 16 : 19, color: const Color(0xFF0A2540)),
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              icon,
+              size: compact ? 16 : 19,
+              color: const Color(0xFF0A2540),
+            ),
           ),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(m.producto,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontWeight: FontWeight.w700, color: const Color(0xFF0A2540), fontSize: compact ? 12.5 : 14)),
+                Text(
+                  m.producto,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF0A2540),
+                    fontSize: compact ? 12.5 : 14,
+                  ),
+                ),
                 const SizedBox(height: 3),
-                Text('$label${motivoTxt.isNotEmpty ? ' • $motivoTxt' : ''}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: const Color(0xFF5A6471), fontSize: compact ? 11 : 12)),
+                Text(
+                  '$label${motivoTxt.isNotEmpty ? ' • $motivoTxt' : ''}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: const Color(0xFF5A6471),
+                    fontSize: compact ? 11 : 12,
+                  ),
+                ),
                 if (stockTxt != null) ...[
                   const SizedBox(height: 2),
-                  Text(stockTxt,
-                      style: TextStyle(color: const Color(0xFF6A7788), fontSize: compact ? 10 : 11.5)),
+                  Text(
+                    stockTxt,
+                    style: TextStyle(
+                      color: const Color(0xFF6A7788),
+                      fontSize: compact ? 10 : 11.5,
+                    ),
+                  ),
+                ],
+                if (m.tipo == 'ENTRADA' &&
+                    (m.precioCompra != null || m.proveedor != null)) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    [
+                      if (m.precioCompra != null)
+                        'Compra: Bs. ${m.precioCompra}',
+                      if (m.proveedor != null) 'Proveedor: ${m.proveedor}',
+                    ].join(' • '),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: const Color(0xFF15803D),
+                      fontSize: compact ? 10 : 11.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ],
                 const SizedBox(height: 2),
-                Text(_fecha(m.fecha),
-                    style: TextStyle(color: const Color(0xFF9AA6B5), fontSize: compact ? 10 : 11)),
+                Text(
+                  _fecha(m.fecha),
+                  style: TextStyle(
+                    color: const Color(0xFF9AA6B5),
+                    fontSize: compact ? 10 : 11,
+                  ),
+                ),
               ],
             ),
           ),
           if (signo.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(left: 8, top: 2),
-              child: Text('$signo${m.cantidad}',
-                  style: TextStyle(fontWeight: FontWeight.w700, color: const Color(0xFF0A2540), fontSize: compact ? 12 : 14)),
+              child: Text(
+                '$signo${m.cantidad}',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF0A2540),
+                  fontSize: compact ? 12 : 14,
+                ),
+              ),
             ),
         ],
       ),
@@ -255,7 +343,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     if (!mounted) return;
 
     int? selectedProductId;
-    String tipo = 'ENTRADA';
+    String tipo = 'AJUSTE';
     String motivo = '';
     final cantidadCtrl = TextEditingController();
     final formKey = GlobalKey<FormState>();
@@ -274,34 +362,59 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   DropdownButtonFormField<int>(
                     decoration: const InputDecoration(labelText: 'Producto'),
                     items: productos
-                        .map((p) => DropdownMenuItem(value: p.id, child: Text(p.nombre)))
+                        .map(
+                          (p) => DropdownMenuItem(
+                            value: p.id,
+                            child: Text(p.nombre),
+                          ),
+                        )
                         .toList(),
                     onChanged: (v) => selectedProductId = v,
-                    validator: (v) => v == null ? 'Selecciona un producto' : null,
+                    validator: (v) =>
+                        v == null ? 'Selecciona un producto' : null,
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
                     initialValue: tipo,
-                    decoration: const InputDecoration(labelText: 'Tipo de movimiento'),
+                    decoration: const InputDecoration(
+                      labelText: 'Tipo de movimiento',
+                    ),
                     items: const [
-                      DropdownMenuItem(value: 'ENTRADA', child: Text('Entrada (compra)')),
-                      DropdownMenuItem(value: 'SALIDA', child: Text('Salida (venta)')),
-                      DropdownMenuItem(value: 'AJUSTE', child: Text('Ajuste (corrección)')),
+                      DropdownMenuItem(
+                        value: 'SALIDA',
+                        child: Text('Salida manual'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'AJUSTE',
+                        child: Text('Ajuste (corrección)'),
+                      ),
                     ],
-                    onChanged: (v) => setDlg(() => tipo = v ?? 'ENTRADA'),
+                    onChanged: (v) => setDlg(() => tipo = v ?? 'AJUSTE'),
+                  ),
+                  const SizedBox(height: 8),
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Las entradas de mercadería se registran desde Inventario con + Stock.',
+                      style: TextStyle(color: Color(0xFF6A7788), fontSize: 11),
+                    ),
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: cantidadCtrl,
                     decoration: const InputDecoration(labelText: 'Cantidad'),
                     keyboardType: TextInputType.number,
-                    validator: (v) =>
-                        (int.tryParse(v ?? '') ?? 0) <= 0 ? 'Ingresa una cantidad válida' : null,
+                    inputFormatters: InputRules.digits,
+                    validator: (v) => (int.tryParse(v ?? '') ?? 0) <= 0
+                        ? 'Ingresa una cantidad válida'
+                        : null,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     decoration: const InputDecoration(
-                        labelText: 'Motivo', hintText: 'Ej: Producto dañado'),
+                      labelText: 'Motivo',
+                      hintText: 'Ej: Producto dañado',
+                    ),
                     onSaved: (v) => motivo = v?.trim() ?? '',
                   ),
                 ],
@@ -309,7 +422,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancelar'),
+            ),
             ElevatedButton(
               onPressed: () async {
                 if (formKey.currentState?.validate() ?? false) {
@@ -325,7 +441,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     );
                     navigator.pop(true);
                   } catch (e) {
-                    messenger.showSnackBar(SnackBar(content: Text('Error: $e')));
+                    messenger.showSnackBar(
+                      SnackBar(content: Text('Error: $e')),
+                    );
                   }
                 }
               },

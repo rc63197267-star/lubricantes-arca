@@ -1,39 +1,46 @@
-import psycopg
-from psycopg import Error
-from psycopg.errors import ForeignKeyViolation
-from psycopg.rows import dict_row
-from db_config import DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME, DB_SSLMODE
+import mysql.connector
+from mysql.connector import Error, IntegrityError
+
+from db_config import DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME
 
 
 def get_connection():
     try:
-        conn = psycopg.connect(
+        return mysql.connector.connect(
             host=DB_HOST,
             port=DB_PORT,
             user=DB_USER,
             password=DB_PASSWORD,
-            dbname=DB_NAME,
-            sslmode=DB_SSLMODE,
+            database=DB_NAME,
+            charset="utf8mb4",
+            collation="utf8mb4_unicode_ci",
+            autocommit=False,
         )
-        return conn
     except Error as e:
-        raise RuntimeError(f"Error conectando a la base de datos: {e}")
+        raise RuntimeError(f"Error conectando a MySQL: {e}")
+
+
+def _dict_cursor(conn):
+    return conn.cursor(dictionary=True)
 
 
 def fetch_products(limit=10):
     conn = get_connection()
+    cur = _dict_cursor(conn)
     try:
-        cur = conn.cursor(row_factory=dict_row)
-        cur.execute("""
-            SELECT id_producto, nombre, marca, precio_compra, precio_venta,
+        cur.execute(
+            """
+            SELECT id_producto, codigo, id_categoria, id_proveedor,
+                   nombre, marca, precio_compra, precio_venta,
                    stock_actual, stock_minimo, imagen
             FROM productos
             WHERE estado = 'ACTIVO'
             ORDER BY id_producto
             LIMIT %s
-        """, (limit,))
-        rows = cur.fetchall()
-        return rows
+            """,
+            (limit,),
+        )
+        return cur.fetchall()
     finally:
         cur.close()
         conn.close()
@@ -41,9 +48,17 @@ def fetch_products(limit=10):
 
 def fetch_clients(limit=50):
     conn = get_connection()
+    cur = _dict_cursor(conn)
     try:
-        cur = conn.cursor(row_factory=dict_row)
-        cur.execute("SELECT id_cliente, nombre, telefono, correo, direccion, estado FROM clientes LIMIT %s", (limit,))
+        cur.execute(
+            """
+            SELECT id_cliente, nombre, telefono, correo, direccion, estado
+            FROM clientes
+            ORDER BY id_cliente
+            LIMIT %s
+            """,
+            (limit,),
+        )
         return cur.fetchall()
     finally:
         cur.close()
@@ -52,21 +67,22 @@ def fetch_clients(limit=50):
 
 def create_client(data: dict):
     conn = get_connection()
+    cur = conn.cursor()
     try:
-        cur = conn.cursor()
         cur.execute(
-            """INSERT INTO clientes (nombre, telefono, correo, direccion, estado)
-               VALUES (%s, %s, %s, %s, %s)
-               RETURNING id_cliente""",
+            """
+            INSERT INTO clientes (nombre, telefono, correo, direccion, estado)
+            VALUES (%s, %s, %s, %s, %s)
+            """,
             (
-                data.get('nombre'),
-                data.get('telefono'),
-                data.get('correo'),
-                data.get('direccion'),
-                data.get('estado', 'ACTIVO'),
+                data.get("nombre"),
+                data.get("telefono"),
+                data.get("correo"),
+                data.get("direccion"),
+                data.get("estado", "ACTIVO"),
             ),
         )
-        new_id = cur.fetchone()[0]
+        new_id = cur.lastrowid
         conn.commit()
         return new_id
     except Exception:
@@ -79,9 +95,17 @@ def create_client(data: dict):
 
 def fetch_suppliers(limit=50):
     conn = get_connection()
+    cur = _dict_cursor(conn)
     try:
-        cur = conn.cursor(row_factory=dict_row)
-        cur.execute("SELECT id_proveedor, nombre, telefono, correo, direccion, estado FROM proveedores LIMIT %s", (limit,))
+        cur.execute(
+            """
+            SELECT id_proveedor, nombre, telefono, correo, direccion, estado
+            FROM proveedores
+            ORDER BY id_proveedor
+            LIMIT %s
+            """,
+            (limit,),
+        )
         return cur.fetchall()
     finally:
         cur.close()
@@ -90,23 +114,22 @@ def fetch_suppliers(limit=50):
 
 def create_supplier(data: dict):
     conn = get_connection()
+    cur = conn.cursor()
     try:
-        cur = conn.cursor()
         cur.execute(
             """
             INSERT INTO proveedores (nombre, telefono, correo, direccion, estado)
             VALUES (%s, %s, %s, %s, %s)
-            RETURNING id_proveedor
             """,
             (
-                data.get('nombre'),
-                data.get('telefono'),
-                data.get('correo'),
-                data.get('direccion'),
-                data.get('estado', 'ACTIVO'),
+                data.get("nombre"),
+                data.get("telefono"),
+                data.get("correo"),
+                data.get("direccion"),
+                data.get("estado", "ACTIVO"),
             ),
         )
-        new_id = cur.fetchone()['id_movimiento']
+        new_id = cur.lastrowid
         conn.commit()
         return new_id
     except Exception:
@@ -119,40 +142,45 @@ def create_supplier(data: dict):
 
 def create_product(data: dict):
     conn = get_connection()
+    cur = conn.cursor()
     try:
-        cur = conn.cursor()
         cur.execute(
             """
-            INSERT INTO productos (codigo, id_categoria, id_proveedor, nombre, marca, precio_compra, precio_venta, stock_actual, stock_minimo, estado, imagen)
+            INSERT INTO productos
+            (codigo, id_categoria, id_proveedor, nombre, marca, precio_compra,
+             precio_venta, stock_actual, stock_minimo, estado, imagen)
             VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-            RETURNING id_producto
             """,
             (
-                data.get('codigo'),
-                data.get('id_categoria', 1),
-                data.get('id_proveedor', 1),
-                data.get('nombre'),
-                data.get('marca'),
-                data.get('precio_compra', 0.0),
-                data.get('precio_venta', 0.0),
-                data.get('stock_actual', 0),
-                data.get('stock_minimo', 0),
-                data.get('estado', 'ACTIVO'),
-                data.get('imagen'),
+                data.get("codigo"),
+                data.get("id_categoria", 1),
+                data.get("id_proveedor", 1),
+                data.get("nombre"),
+                data.get("marca"),
+                data.get("precio_compra", 0.0),
+                data.get("precio_venta", 0.0),
+                data.get("stock_actual", 0),
+                data.get("stock_minimo", 0),
+                data.get("estado", "ACTIVO"),
+                data.get("imagen"),
             ),
         )
-        new_id = cur.fetchone()[0]
-        if (data.get('stock_actual', 0) or 0) > 0:
+        new_id = cur.lastrowid
+        stock_inicial = int(data.get("stock_actual", 0) or 0)
+        if stock_inicial > 0:
             cur.execute(
-                """INSERT INTO stock_movimientos
-                   (id_producto, tipo_movimiento, cantidad, motivo, stock_anterior, stock_nuevo, observacion)
-                   VALUES (%s, 'ENTRADA', %s, %s, 0, %s, %s)""",
+                """
+                INSERT INTO stock_movimientos
+                (id_producto, tipo_movimiento, cantidad, motivo,
+                 stock_anterior, stock_nuevo, observacion)
+                VALUES (%s, 'ENTRADA', %s, %s, 0, %s, %s)
+                """,
                 (
                     new_id,
-                    data.get('stock_actual', 0),
-                    'Ingreso de mercadería',
-                    data.get('stock_actual', 0),
-                    'Entrada inicial de stock',
+                    stock_inicial,
+                    "Ingreso de mercadería",
+                    stock_inicial,
+                    "Entrada inicial de stock",
                 ),
             )
         conn.commit()
@@ -163,31 +191,42 @@ def create_product(data: dict):
     finally:
         cur.close()
         conn.close()
+
+
 def update_product(id_producto: int, data: dict):
     conn = get_connection()
+    cur = conn.cursor()
     try:
-        cur = conn.cursor()
         cur.execute(
-            """UPDATE productos SET
-                 id_categoria = %s, id_proveedor = %s, nombre = %s, marca = %s,
-                 precio_compra = %s, precio_venta = %s, stock_actual = %s,
-                 stock_minimo = %s, imagen = %s
-               WHERE id_producto = %s""",
+            """
+            UPDATE productos SET
+                id_categoria = %s,
+                id_proveedor = %s,
+                nombre = %s,
+                marca = %s,
+                precio_compra = %s,
+                precio_venta = %s,
+                stock_actual = %s,
+                stock_minimo = %s,
+                imagen = %s
+            WHERE id_producto = %s
+            """,
             (
-                data.get('id_categoria', 1),
-                data.get('id_proveedor', 1),
-                data.get('nombre'),
-                data.get('marca'),
-                data.get('precio_compra', 0.0),
-                data.get('precio_venta', 0.0),
-                data.get('stock_actual', 0),
-                data.get('stock_minimo', 0),
-                data.get('imagen'),
+                data.get("id_categoria", 1),
+                data.get("id_proveedor", 1),
+                data.get("nombre"),
+                data.get("marca"),
+                data.get("precio_compra", 0.0),
+                data.get("precio_venta", 0.0),
+                data.get("stock_actual", 0),
+                data.get("stock_minimo", 0),
+                data.get("imagen"),
                 id_producto,
             ),
         )
+        rows = cur.rowcount
         conn.commit()
-        return cur.rowcount
+        return rows
     except Exception:
         conn.rollback()
         raise
@@ -195,16 +234,19 @@ def update_product(id_producto: int, data: dict):
         cur.close()
         conn.close()
 
+
 def delete_product(id_producto):
     conn = get_connection()
+    cur = conn.cursor()
     try:
-        cur = conn.cursor()
-        cur.execute("DELETE FROM productos WHERE id_producto=%s", (id_producto,))
+        cur.execute("DELETE FROM productos WHERE id_producto = %s", (id_producto,))
         rows = cur.rowcount
         conn.commit()
         return rows
-    except ForeignKeyViolation:
+    except IntegrityError as e:
         conn.rollback()
+        if getattr(e, "errno", None) != 1451:
+            raise
         cur.execute(
             "UPDATE productos SET estado = 'INACTIVO' WHERE id_producto = %s",
             (id_producto,),
@@ -219,23 +261,43 @@ def delete_product(id_producto):
         cur.close()
         conn.close()
 
+
 def fetch_sales(limit=50):
     conn = get_connection()
+    cur = _dict_cursor(conn)
     try:
-        cur = conn.cursor(row_factory=dict_row)
-        cur.execute("""
-            SELECT v.id_venta, v.numero_venta, v.id_cliente, c.nombre as cliente,
-                   v.fecha, v.metodo_pago, v.total, v.estado,
-                   STRING_AGG(p.nombre || ' x' || dv.cantidad::text, ', ' ORDER BY dv.id_detalle_venta) AS productos
+        cur.execute(
+            """
+            SELECT
+                v.id_venta,
+                v.numero_venta,
+                v.id_cliente,
+                c.nombre AS cliente,
+                v.fecha,
+                v.metodo_pago,
+                v.descuento,
+                v.monto_recibido,
+                v.cambio,
+                v.total,
+                v.estado,
+                GROUP_CONCAT(
+                    CONCAT(p.nombre, ' x', dv.cantidad)
+                    ORDER BY dv.id_detalle_venta
+                    SEPARATOR ', '
+                ) AS productos
             FROM ventas v
             JOIN clientes c ON v.id_cliente = c.id_cliente
             LEFT JOIN detalle_ventas dv ON dv.id_venta = v.id_venta
             LEFT JOIN productos p ON p.id_producto = dv.id_producto
-            GROUP BY v.id_venta, v.numero_venta, v.id_cliente, c.nombre,
-                     v.fecha, v.metodo_pago, v.total, v.estado
+            GROUP BY
+                v.id_venta, v.numero_venta, v.id_cliente, c.nombre,
+                v.fecha, v.metodo_pago, v.descuento,
+                v.monto_recibido, v.cambio, v.total, v.estado
             ORDER BY v.fecha DESC
             LIMIT %s
-        """, (limit,))
+            """,
+            (limit,),
+        )
         return cur.fetchall()
     finally:
         cur.close()
@@ -244,62 +306,114 @@ def fetch_sales(limit=50):
 
 def create_sale(data: dict):
     conn = get_connection()
+    cur = _dict_cursor(conn)
     try:
-        cur = conn.cursor(row_factory=dict_row)
-
-        # 1) Generate numero_venta
         cur.execute("SELECT COALESCE(MAX(id_venta), 0) + 1 AS next_seq FROM ventas")
-        seq = cur.fetchone()['next_seq']
+        seq = int(cur.fetchone()["next_seq"])
         numero_venta = f"V-{seq:06d}"
 
-        # 2) Insert venta
+        subtotal = sum(
+            int(item["cantidad"]) * float(item["precio_unitario"])
+            for item in data["items"]
+        )
+        descuento = max(0.0, float(data.get("descuento", 0) or 0))
+        if descuento > subtotal:
+            raise RuntimeError("El descuento no puede ser mayor al subtotal")
+        total_final = subtotal - descuento
+
+        metodo_pago = data.get("metodo_pago", "EFECTIVO")
+        monto_recibido = max(
+            0.0, float(data.get("monto_recibido", 0) or 0)
+        )
+        if metodo_pago == "EFECTIVO":
+            if monto_recibido < total_final:
+                raise RuntimeError("El monto recibido es menor al total a pagar")
+            cambio = monto_recibido - total_final
+        else:
+            monto_recibido = 0.0
+            cambio = 0.0
+
         cur.execute(
-            """INSERT INTO ventas (numero_venta, id_cliente, id_usuario, metodo_pago, total)
-               VALUES (%s, %s, %s, %s, %s)
-               RETURNING id_venta""",
+            """
+            INSERT INTO ventas
+            (numero_venta, id_cliente, id_usuario, metodo_pago, descuento,
+             monto_recibido, cambio, total)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """,
             (
                 numero_venta,
-                data['id_cliente'],
-                data.get('id_usuario', 1),
-                data.get('metodo_pago', 'EFECTIVO'),
-                data['total'],
+                data["id_cliente"],
+                data.get("id_usuario", 1),
+                metodo_pago,
+                descuento,
+                monto_recibido,
+                cambio,
+                total_final,
             ),
         )
-        id_venta = cur.fetchone()['id_venta']
+        id_venta = cur.lastrowid
 
-        # 3) Insert detalles, update stock and record movements
-        for item in data['items']:
+        for item in data["items"]:
             cur.execute(
-                "SELECT stock_actual, stock_minimo FROM productos WHERE id_producto = %s",
-                (item['id_producto'],),
+                """
+                SELECT stock_actual, stock_minimo
+                FROM productos
+                WHERE id_producto = %s
+                FOR UPDATE
+                """,
+                (item["id_producto"],),
             )
             prod = cur.fetchone()
-            stock_anterior = int(prod['stock_actual']) if prod else 0
+            if not prod:
+                raise RuntimeError(
+                    f"Producto {item['id_producto']} no encontrado"
+                )
 
+            cantidad = int(item["cantidad"])
+            stock_anterior = int(prod["stock_actual"])
+            if cantidad <= 0:
+                raise RuntimeError("La cantidad debe ser mayor a 0")
+            if cantidad > stock_anterior:
+                raise RuntimeError(
+                    f"Stock insuficiente para el producto {item['id_producto']}"
+                )
+
+            precio = item["precio_unitario"]
             cur.execute(
-                """INSERT INTO detalle_ventas (id_venta, id_producto, cantidad, precio_unitario, subtotal)
-                   VALUES (%s, %s, %s, %s, %s)""",
+                """
+                INSERT INTO detalle_ventas
+                (id_venta, id_producto, cantidad, precio_unitario, subtotal)
+                VALUES (%s, %s, %s, %s, %s)
+                """,
                 (
                     id_venta,
-                    item['id_producto'],
-                    item['cantidad'],
-                    item['precio_unitario'],
-                    item['cantidad'] * item['precio_unitario'],
+                    item["id_producto"],
+                    cantidad,
+                    precio,
+                    cantidad * precio,
                 ),
             )
+
+            stock_nuevo = stock_anterior - cantidad
             cur.execute(
-                "UPDATE productos SET stock_actual = stock_actual - %s WHERE id_producto = %s",
-                (item['cantidad'], item['id_producto']),
+                """
+                UPDATE productos
+                SET stock_actual = %s
+                WHERE id_producto = %s
+                """,
+                (stock_nuevo, item["id_producto"]),
             )
-            stock_nuevo = stock_anterior - item['cantidad']
 
             cur.execute(
-                """INSERT INTO stock_movimientos
-                   (id_producto, tipo_movimiento, cantidad, motivo, stock_anterior, stock_nuevo, observacion)
-                   VALUES (%s, 'SALIDA', %s, %s, %s, %s, %s)""",
+                """
+                INSERT INTO stock_movimientos
+                (id_producto, tipo_movimiento, cantidad, motivo,
+                 stock_anterior, stock_nuevo, observacion)
+                VALUES (%s, 'SALIDA', %s, %s, %s, %s, %s)
+                """,
                 (
-                    item['id_producto'],
-                    item['cantidad'],
+                    item["id_producto"],
+                    cantidad,
                     f"Venta {numero_venta}",
                     stock_anterior,
                     stock_nuevo,
@@ -307,19 +421,23 @@ def create_sale(data: dict):
                 ),
             )
 
-            if prod and int(prod['stock_minimo']) > 0 and stock_nuevo <= int(prod['stock_minimo']):
-                deficit = max(1, int(prod['stock_minimo']) - stock_nuevo)
+            stock_minimo = int(prod["stock_minimo"])
+            if stock_minimo > 0 and stock_nuevo <= stock_minimo:
+                deficit = max(1, stock_minimo - stock_nuevo)
                 cur.execute(
-                    """INSERT INTO stock_movimientos
-                       (id_producto, tipo_movimiento, cantidad, motivo, stock_anterior, stock_nuevo, observacion)
-                       VALUES (%s, 'ALERTA', %s, %s, %s, %s, %s)""",
+                    """
+                    INSERT INTO stock_movimientos
+                    (id_producto, tipo_movimiento, cantidad, motivo,
+                     stock_anterior, stock_nuevo, observacion)
+                    VALUES (%s, 'ALERTA', %s, %s, %s, %s, %s)
+                    """,
                     (
-                        item['id_producto'],
+                        item["id_producto"],
                         deficit,
-                        'Bajo stock',
+                        "Bajo stock",
                         stock_anterior,
                         stock_nuevo,
-                        f"Producto por debajo del stock mínimo ({prod['stock_minimo']})",
+                        f"Producto por debajo del stock mínimo ({stock_minimo})",
                     ),
                 )
 
@@ -331,19 +449,36 @@ def create_sale(data: dict):
     finally:
         cur.close()
         conn.close()
+
+
 def fetch_movimientos(limit=100):
     conn = get_connection()
+    cur = _dict_cursor(conn)
     try:
-        cur = conn.cursor(row_factory=dict_row)
-        cur.execute("""
-            SELECT m.id_movimiento, m.id_producto, p.nombre as producto,
-                   m.tipo_movimiento, m.cantidad, m.motivo, m.observacion,
-                   m.fecha, m.stock_anterior, m.stock_nuevo
+        cur.execute(
+            """
+            SELECT
+                m.id_movimiento,
+                m.id_producto,
+                p.nombre AS producto,
+                m.tipo_movimiento,
+                m.cantidad,
+                m.precio_compra,
+                m.id_proveedor,
+                pr.nombre AS proveedor,
+                m.motivo,
+                m.observacion,
+                m.fecha,
+                m.stock_anterior,
+                m.stock_nuevo
             FROM stock_movimientos m
             JOIN productos p ON m.id_producto = p.id_producto
+            LEFT JOIN proveedores pr ON m.id_proveedor = pr.id_proveedor
             ORDER BY m.fecha DESC, m.id_movimiento DESC
             LIMIT %s
-        """, (limit,))
+            """,
+            (limit,),
+        )
         return cur.fetchall()
     finally:
         cur.close()
@@ -352,64 +487,109 @@ def fetch_movimientos(limit=100):
 
 def create_movimiento(data: dict):
     conn = get_connection()
+    cur = _dict_cursor(conn)
     try:
-        cur = conn.cursor(row_factory=dict_row)
         cur.execute(
-            "SELECT stock_actual, stock_minimo FROM productos WHERE id_producto = %s",
-            (data['id_producto'],),
+            """
+            SELECT stock_actual, stock_minimo, precio_compra, id_proveedor
+            FROM productos
+            WHERE id_producto = %s
+            FOR UPDATE
+            """,
+            (data["id_producto"],),
         )
         prod = cur.fetchone()
         if not prod:
-            raise RuntimeError('Producto no encontrado')
+            raise RuntimeError("Producto no encontrado")
 
-        tipo = str(data.get('tipo_movimiento', 'AJUSTE')).upper()
-        cantidad = int(data.get('cantidad', 0))
+        tipo = str(data.get("tipo_movimiento", "AJUSTE")).upper()
+        cantidad = int(data.get("cantidad", 0))
+        if tipo not in {"ENTRADA", "SALIDA", "AJUSTE"}:
+            raise RuntimeError("Tipo de movimiento no válido")
         if cantidad <= 0:
-            raise RuntimeError('La cantidad debe ser mayor a 0')
+            raise RuntimeError("La cantidad debe ser mayor a 0")
 
-        stock_anterior = int(prod['stock_actual'])
-        if tipo == 'ENTRADA':
+        stock_anterior = int(prod["stock_actual"])
+        if tipo == "ENTRADA":
             stock_nuevo = stock_anterior + cantidad
         else:
             stock_nuevo = stock_anterior - cantidad
 
         if stock_nuevo < 0:
-            raise RuntimeError('Stock insuficiente')
+            raise RuntimeError("Stock insuficiente")
+
+        precio_compra = data.get("precio_compra")
+        id_proveedor = data.get("id_proveedor")
+
+        if tipo == "ENTRADA":
+            if precio_compra is None or float(precio_compra) <= 0:
+                raise RuntimeError("Ingresa un precio de compra válido")
+            if id_proveedor is None:
+                raise RuntimeError("Selecciona un proveedor")
+
+            cur.execute(
+                """
+                UPDATE productos
+                SET stock_actual = %s,
+                    precio_compra = %s,
+                    id_proveedor = %s
+                WHERE id_producto = %s
+                """,
+                (
+                    stock_nuevo,
+                    float(precio_compra),
+                    id_proveedor,
+                    data["id_producto"],
+                ),
+            )
+        else:
+            cur.execute(
+                """
+                UPDATE productos
+                SET stock_actual = %s
+                WHERE id_producto = %s
+                """,
+                (stock_nuevo, data["id_producto"]),
+            )
 
         cur.execute(
-            "UPDATE productos SET stock_actual = %s WHERE id_producto = %s",
-            (stock_nuevo, data['id_producto']),
-        )
-        cur.execute(
-            """INSERT INTO stock_movimientos
-               (id_producto, tipo_movimiento, cantidad, motivo, stock_anterior, stock_nuevo, observacion)
-               VALUES (%s, %s, %s, %s, %s, %s, %s)
-               RETURNING id_movimiento""",
+            """
+            INSERT INTO stock_movimientos
+            (id_producto, tipo_movimiento, cantidad, precio_compra,
+             id_proveedor, motivo, stock_anterior, stock_nuevo, observacion)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """,
             (
-                data['id_producto'],
+                data["id_producto"],
                 tipo,
                 cantidad,
-                data.get('motivo', ''),
+                float(precio_compra) if precio_compra is not None else None,
+                id_proveedor,
+                data.get("motivo", ""),
                 stock_anterior,
                 stock_nuevo,
-                data.get('observacion'),
+                data.get("observacion"),
             ),
         )
-        new_id = cur.fetchone()['id_movimiento']
+        new_id = cur.lastrowid
 
-        if int(prod['stock_minimo']) > 0 and stock_nuevo <= int(prod['stock_minimo']):
-            deficit = max(1, int(prod['stock_minimo']) - stock_nuevo)
+        stock_minimo = int(prod["stock_minimo"])
+        if stock_minimo > 0 and stock_nuevo <= stock_minimo:
+            deficit = max(1, stock_minimo - stock_nuevo)
             cur.execute(
-                """INSERT INTO stock_movimientos
-                   (id_producto, tipo_movimiento, cantidad, motivo, stock_anterior, stock_nuevo, observacion)
-                   VALUES (%s, 'ALERTA', %s, %s, %s, %s, %s)""",
+                """
+                INSERT INTO stock_movimientos
+                (id_producto, tipo_movimiento, cantidad, motivo,
+                 stock_anterior, stock_nuevo, observacion)
+                VALUES (%s, 'ALERTA', %s, %s, %s, %s, %s)
+                """,
                 (
-                    data['id_producto'],
+                    data["id_producto"],
                     deficit,
-                    'Bajo stock',
+                    "Bajo stock",
                     stock_anterior,
                     stock_nuevo,
-                    f"Producto por debajo del stock mínimo ({prod['stock_minimo']})",
+                    f"Producto por debajo del stock mínimo ({stock_minimo})",
                 ),
             )
 
@@ -421,12 +601,20 @@ def create_movimiento(data: dict):
     finally:
         cur.close()
         conn.close()
+
+
 def fetch_categorias(limit=100):
     conn = get_connection()
+    cur = _dict_cursor(conn)
     try:
-        cur = conn.cursor(row_factory=dict_row)
         cur.execute(
-            "SELECT id_categoria, nombre, descripcion, estado FROM categorias WHERE estado = 'ACTIVO' LIMIT %s",
+            """
+            SELECT id_categoria, nombre, descripcion, estado
+            FROM categorias
+            WHERE estado = 'ACTIVO'
+            ORDER BY id_categoria
+            LIMIT %s
+            """,
             (limit,),
         )
         return cur.fetchall()
@@ -437,19 +625,20 @@ def fetch_categorias(limit=100):
 
 def create_categoria(data: dict):
     conn = get_connection()
+    cur = conn.cursor()
     try:
-        cur = conn.cursor()
         cur.execute(
-            """INSERT INTO categorias (nombre, descripcion, estado)
-               VALUES (%s, %s, %s)
-               RETURNING id_categoria""",
+            """
+            INSERT INTO categorias (nombre, descripcion, estado)
+            VALUES (%s, %s, %s)
+            """,
             (
-                data.get('nombre'),
-                data.get('descripcion'),
-                data.get('estado', 'ACTIVO'),
+                data.get("nombre"),
+                data.get("descripcion"),
+                data.get("estado", "ACTIVO"),
             ),
         )
-        new_id = cur.fetchone()[0]
+        new_id = cur.lastrowid
         conn.commit()
         return new_id
     except Exception:
@@ -458,13 +647,20 @@ def create_categoria(data: dict):
     finally:
         cur.close()
         conn.close()
+
+
 def verify_login(usuario: str, contrasena: str):
     conn = get_connection()
+    cur = _dict_cursor(conn)
     try:
-        cur = conn.cursor(row_factory=dict_row)
         cur.execute(
-            "SELECT id_usuario, nombre, usuario, rol, estado FROM usuarios "
-            "WHERE usuario = %s AND contraseña = %s AND estado = 'ACTIVO'",
+            """
+            SELECT id_usuario, nombre, usuario, rol, estado
+            FROM usuarios
+            WHERE usuario = %s
+              AND `contraseña` = %s
+              AND estado = 'ACTIVO'
+            """,
             (usuario, contrasena),
         )
         return cur.fetchone()
@@ -475,10 +671,15 @@ def verify_login(usuario: str, contrasena: str):
 
 def fetch_usuarios(limit=100):
     conn = get_connection()
+    cur = _dict_cursor(conn)
     try:
-        cur = conn.cursor(row_factory=dict_row)
         cur.execute(
-            "SELECT id_usuario, nombre, usuario, rol, estado FROM usuarios LIMIT %s",
+            """
+            SELECT id_usuario, nombre, usuario, rol, estado
+            FROM usuarios
+            ORDER BY id_usuario
+            LIMIT %s
+            """,
             (limit,),
         )
         return cur.fetchall()
@@ -489,20 +690,25 @@ def fetch_usuarios(limit=100):
 
 def create_usuario(data: dict):
     conn = get_connection()
+    cur = conn.cursor()
     try:
-        cur = conn.cursor()
         cur.execute(
-            "INSERT INTO usuarios (nombre, usuario, contraseña, rol, estado) VALUES (%s, %s, %s, %s, %s) RETURNING id_usuario",
+            """
+            INSERT INTO usuarios
+            (nombre, usuario, `contraseña`, rol, estado)
+            VALUES (%s, %s, %s, %s, %s)
+            """,
             (
-                data.get('nombre'),
-                data.get('usuario'),
-                data.get('contraseña'),
-                data.get('rol', 'VENDEDOR'),
-                data.get('estado', 'ACTIVO'),
+                data.get("nombre"),
+                data.get("usuario"),
+                data.get("contraseña"),
+                data.get("rol", "VENDEDOR"),
+                data.get("estado", "ACTIVO"),
             ),
         )
+        new_id = cur.lastrowid
         conn.commit()
-        return cur.fetchone()[0]
+        return new_id
     except Exception:
         conn.rollback()
         raise

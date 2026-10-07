@@ -27,8 +27,10 @@ class SalesTable extends StatelessWidget {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 20),
         child: Center(
-          child: Text('No hay ventas registradas',
-              style: TextStyle(color: Color(0xFF6A7788))),
+          child: Text(
+            'No hay ventas registradas',
+            style: TextStyle(color: Color(0xFF6A7788)),
+          ),
         ),
       );
     }
@@ -53,35 +55,80 @@ class SalesTable extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(s.numero,
-                          style: const TextStyle(color: Color(0xFF0A2540), fontWeight: FontWeight.w700, fontSize: 13)),
+                      Text(
+                        s.numero,
+                        style: const TextStyle(
+                          color: Color(0xFF0A2540),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                        ),
+                      ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
-                          color: completada ? const Color(0xFFE7F7ED) : const Color(0xFFF3F4F6),
+                          color: completada
+                              ? const Color(0xFFE7F7ED)
+                              : const Color(0xFFF3F4F6),
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: Text(completada ? 'Completado' : 'Anulado',
-                            style: TextStyle(color: completada ? const Color(0xFF228B57) : const Color(0xFF5A6471), fontWeight: FontWeight.w600, fontSize: 11)),
+                        child: Text(
+                          completada ? 'Completado' : 'Anulado',
+                          style: TextStyle(
+                            color: completada
+                                ? const Color(0xFF228B57)
+                                : const Color(0xFF5A6471),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 11,
+                          ),
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
-                  Text(s.cliente,
-                      style: const TextStyle(color: Color(0xFF3E4756), fontWeight: FontWeight.w500, fontSize: 12),
-                      maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(
+                    s.cliente,
+                    style: const TextStyle(
+                      color: Color(0xFF3E4756),
+                      fontWeight: FontWeight.w500,
+                      fontSize: 12,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   if (s.productos != null && s.productos!.isNotEmpty) ...[
                     const SizedBox(height: 2),
-                    Text(s.productos!,
-                        style: const TextStyle(color: Color(0xFF6A7788), fontSize: 11),
-                        maxLines: 1, overflow: TextOverflow.ellipsis),
+                    Text(
+                      s.productos!,
+                      style: const TextStyle(
+                        color: Color(0xFF6A7788),
+                        fontSize: 11,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ],
                   const SizedBox(height: 4),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(_fmtFecha(s.fecha), style: const TextStyle(color: Color(0xFF6A7788), fontSize: 11)),
-                      Text('Bs. ${s.total}', style: const TextStyle(color: Color(0xFF0A2540), fontWeight: FontWeight.w700, fontSize: 12)),
+                      Text(
+                        _fmtFecha(s.fecha),
+                        style: const TextStyle(
+                          color: Color(0xFF6A7788),
+                          fontSize: 11,
+                        ),
+                      ),
+                      Text(
+                        'Bs. ${s.total}',
+                        style: const TextStyle(
+                          color: Color(0xFF0A2540),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -96,11 +143,54 @@ class SalesTable extends StatelessWidget {
       children: [
         const Row(
           children: [
-            Expanded(child: Text('ID Pedido', style: TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF0A2540)))),
-            Expanded(child: Text('Cliente', style: TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF0A2540)))),
-            Expanded(child: Text('Fecha', style: TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF0A2540)))),
-            Expanded(child: Text('Estado', style: TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF0A2540)))),
-            Expanded(child: Align(alignment: Alignment.centerRight, child: Text('Monto', style: TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF0A2540))))),
+            Expanded(
+              child: Text(
+                'ID Pedido',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF0A2540),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Text(
+                'Cliente',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF0A2540),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Text(
+                'Fecha',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF0A2540),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Text(
+                'Estado',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF0A2540),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  'Monto',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF0A2540),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 10),
@@ -110,31 +200,79 @@ class SalesTable extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 10),
             child: Row(
               children: [
-                Expanded(child: Text(s.numero, style: const TextStyle(color: Color(0xFF0A2540), fontWeight: FontWeight.w600))),
+                Expanded(
+                  child: Text(
+                    s.numero,
+                    style: const TextStyle(
+                      color: Color(0xFF0A2540),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(s.cliente, style: const TextStyle(color: Color(0xFF3E4756)), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      Text(
+                        s.cliente,
+                        style: const TextStyle(color: Color(0xFF3E4756)),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                       if (s.productos != null && s.productos!.isNotEmpty)
-                        Text(s.productos!, style: const TextStyle(color: Color(0xFF6A7788), fontSize: 11), maxLines: 1, overflow: TextOverflow.ellipsis),
+                        Text(
+                          s.productos!,
+                          style: const TextStyle(
+                            color: Color(0xFF6A7788),
+                            fontSize: 11,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                     ],
                   ),
                 ),
-                Expanded(child: Text(_fmtFecha(s.fecha), style: const TextStyle(color: Color(0xFF3E4756)))),
                 Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: completada ? const Color(0xFFE7F7ED) : const Color(0xFFF3F4F6),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(completada ? 'Completado' : 'Anulado',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: completada ? const Color(0xFF228B57) : const Color(0xFF5A6471), fontWeight: FontWeight.w600, fontSize: 12)),
+                  child: Text(
+                    _fmtFecha(s.fecha),
+                    style: const TextStyle(color: Color(0xFF3E4756)),
                   ),
                 ),
-                Expanded(child: Text('Bs. ${s.total}', textAlign: TextAlign.right, style: const TextStyle(color: Color(0xFF0A2540), fontWeight: FontWeight.w700))),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: completada
+                          ? const Color(0xFFE7F7ED)
+                          : const Color(0xFFF3F4F6),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      completada ? 'Completado' : 'Anulado',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: completada
+                            ? const Color(0xFF228B57)
+                            : const Color(0xFF5A6471),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    'Bs. ${s.total}',
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(
+                      color: Color(0xFF0A2540),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
               ],
             ),
           );
@@ -195,14 +333,28 @@ class _OverviewScreenState extends State<OverviewScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.cloud_off_rounded, size: 44, color: Color(0xFF6A7788)),
+                  const Icon(
+                    Icons.cloud_off_rounded,
+                    size: 44,
+                    color: Color(0xFF6A7788),
+                  ),
                   const SizedBox(height: 12),
-                  const Text('No se pudo cargar el resumen',
-                      style: TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF0A2540))),
+                  const Text(
+                    'No se pudo cargar el resumen',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF0A2540),
+                    ),
+                  ),
                   const SizedBox(height: 6),
-                  Text('${snapshot.error}',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: Color(0xFF6A7788), fontSize: 12)),
+                  Text(
+                    '${snapshot.error}',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Color(0xFF6A7788),
+                      fontSize: 12,
+                    ),
+                  ),
                   const SizedBox(height: 14),
                   ElevatedButton.icon(
                     onPressed: _reload,
@@ -217,7 +369,9 @@ class _OverviewScreenState extends State<OverviewScreen> {
           final ventas = snapshot.data![1] as List<Sale>;
 
           final ingresos = ventas.fold<double>(
-              0, (s, v) => s + (double.tryParse(v.total) ?? 0));
+            0,
+            (s, v) => s + (double.tryParse(v.total) ?? 0),
+          );
           final lowStock = productos.where(_isLow).toList();
 
           return RefreshIndicator(
@@ -225,7 +379,9 @@ class _OverviewScreenState extends State<OverviewScreen> {
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: EdgeInsets.symmetric(
-                  horizontal: isPhone ? 12 : 20, vertical: isPhone ? 12 : 18),
+                horizontal: isPhone ? 12 : 20,
+                vertical: isPhone ? 12 : 18,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -236,11 +392,22 @@ class _OverviewScreenState extends State<OverviewScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Resumen',
-                                style: TextStyle(fontSize: isPhone ? 24 : 32, fontWeight: FontWeight.w700, color: const Color(0xFF0A2540))),
+                            Text(
+                              'Resumen',
+                              style: TextStyle(
+                                fontSize: isPhone ? 24 : 32,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF0A2540),
+                              ),
+                            ),
                             const SizedBox(height: 6),
-                            Text('Resumen general del negocio.',
-                                style: TextStyle(fontSize: isPhone ? 13 : 16, color: const Color(0xFF6A7788))),
+                            Text(
+                              'Resumen general del negocio.',
+                              style: TextStyle(
+                                fontSize: isPhone ? 13 : 16,
+                                color: const Color(0xFF6A7788),
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -253,8 +420,11 @@ class _OverviewScreenState extends State<OverviewScreen> {
                     crossAxisCount: gridColumns,
                     crossAxisSpacing: isPhone ? 10 : 18,
                     mainAxisSpacing: isPhone ? 10 : 18,
-                    childAspectRatio:
-                        width >= 900 ? 1.8 : isPhone ? 1.5 : 1.7,
+                    childAspectRatio: width >= 900
+                        ? 1.8
+                        : isPhone
+                        ? 1.5
+                        : 1.7,
                     children: [
                       MetricCard(
                         titulo: 'Ingresos totales',
@@ -317,8 +487,14 @@ class _OverviewScreenState extends State<OverviewScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Ventas recientes',
-                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xFF0A2540))),
+                        const Text(
+                          'Ventas recientes',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF0A2540),
+                          ),
+                        ),
                         const SizedBox(height: 14),
                         SalesTable(sales: ventas),
                       ],
@@ -338,17 +514,19 @@ class _OverviewScreenState extends State<OverviewScreen> {
     final dias = <Map<String, dynamic>>[];
     for (var i = 6; i >= 0; i--) {
       final day = now.subtract(Duration(days: i));
-      final key = '${day.year}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}';
+      final key =
+          '${day.year}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}';
       final sales = ventas.where((v) => v.fecha.startsWith(key)).toList();
       final label = i == 0
           ? 'Hoy'
           : i == 1
-              ? 'Ayer'
-              : '${day.day.toString().padLeft(2, '0')}/${day.month.toString().padLeft(2, '0')}';
+          ? 'Ayer'
+          : '${day.day.toString().padLeft(2, '0')}/${day.month.toString().padLeft(2, '0')}';
       dias.add({'label': label, 'sales': sales});
     }
-    final diasConActividad =
-        dias.where((d) => (d['sales'] as List).isNotEmpty).toList();
+    final diasConActividad = dias
+        .where((d) => (d['sales'] as List).isNotEmpty)
+        .toList();
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -363,21 +541,33 @@ class _OverviewScreenState extends State<OverviewScreen> {
           const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Ventas por día',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xFF0A2540))),
-              Text('Últimos 7 días',
-                  style: TextStyle(fontSize: 12, color: Color(0xFF6A7788))),
+              Text(
+                'Ventas por día',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF0A2540),
+                ),
+              ),
+              Text(
+                'Últimos 7 días',
+                style: TextStyle(fontSize: 12, color: Color(0xFF6A7788)),
+              ),
             ],
           ),
           const SizedBox(height: 14),
           if (diasConActividad.isEmpty)
-            const Text('Sin ventas en los últimos 7 días',
-                style: TextStyle(color: Color(0xFF6A7788)))
+            const Text(
+              'Sin ventas en los últimos 7 días',
+              style: TextStyle(color: Color(0xFF6A7788)),
+            )
           else
             ...diasConActividad.map((d) {
               final sales = d['sales'] as List<Sale>;
               final total = sales.fold<double>(
-                  0, (s, v) => s + (double.tryParse(v.total) ?? 0));
+                0,
+                (s, v) => s + (double.tryParse(v.total) ?? 0),
+              );
               final nombres = sales
                   .map((s) => s.productos)
                   .where((p) => p != null && p.isNotEmpty)
@@ -390,23 +580,41 @@ class _OverviewScreenState extends State<OverviewScreen> {
                   children: [
                     SizedBox(
                       width: 60,
-                      child: Text('${d['label']}',
-                          style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF0A2540))),
+                      child: Text(
+                        '${d['label']}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF0A2540),
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('${sales.length} venta(s) • ${_fmtMoney(total)}',
-                              style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF3E4756), fontSize: 12.5)),
+                          Text(
+                            '${sales.length} venta(s) • ${_fmtMoney(total)}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF3E4756),
+                              fontSize: 12.5,
+                            ),
+                          ),
                           if (nombres.isNotEmpty) ...[
                             const SizedBox(height: 4),
-                            ...nombres.map((n) => Padding(
-                                  padding: const EdgeInsets.only(bottom: 2),
-                                  child: Text('• $n',
-                                      style: const TextStyle(color: Color(0xFF6A7788), fontSize: 12)),
-                                )),
+                            ...nombres.map(
+                              (n) => Padding(
+                                padding: const EdgeInsets.only(bottom: 2),
+                                child: Text(
+                                  '• $n',
+                                  style: const TextStyle(
+                                    color: Color(0xFF6A7788),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ),
                           ],
                         ],
                       ),
@@ -434,22 +642,40 @@ class _OverviewScreenState extends State<OverviewScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Bajo stock',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: Color(0xFF0A2540))),
-              Text('${lowStock.length}',
-                  style: const TextStyle(fontSize: 14, color: Color(0xFFB91C1C), fontWeight: FontWeight.w700)),
+              const Text(
+                'Bajo stock',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF0A2540),
+                ),
+              ),
+              Text(
+                '${lowStock.length}',
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFFB91C1C),
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 14),
           if (lowStock.isEmpty)
-            const Text('Todo el inventario está en niveles saludables ✓',
-                style: TextStyle(color: Color(0xFF228B57)))
+            const Text(
+              'Todo el inventario está en niveles saludables ✓',
+              style: TextStyle(color: Color(0xFF228B57)),
+            )
           else
-            ...lowStock.take(5).map((p) => TopProductRow(
-                  nombre: p.nombre,
-                  sku: 'mín. ${p.stockMinimo}',
-                  ventas: p.stock,
-                )),
+            ...lowStock
+                .take(5)
+                .map(
+                  (p) => TopProductRow(
+                    nombre: p.nombre,
+                    sku: 'mín. ${p.stockMinimo}',
+                    ventas: p.stock,
+                  ),
+                ),
         ],
       ),
     );

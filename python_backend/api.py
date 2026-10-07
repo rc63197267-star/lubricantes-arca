@@ -226,6 +226,8 @@ class SaleIn(BaseModel):
     id_cliente: int
     id_usuario: Optional[int] = 1
     metodo_pago: Optional[str] = "EFECTIVO"
+    descuento: float = Field(0, ge=0)
+    monto_recibido: float = Field(0, ge=0)
     total: float
     items: List[SaleItem]
 
@@ -243,6 +245,8 @@ def post_sale(payload: SaleIn):
     try:
         new_id = create_sale(payload.dict())
         return {"id_venta": new_id}
+    except RuntimeError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

@@ -57,6 +57,9 @@ CREATE TABLE IF NOT EXISTS ventas (
   id_usuario integer NOT NULL REFERENCES usuarios(id_usuario),
   fecha timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   metodo_pago varchar(10) NOT NULL CHECK (metodo_pago IN ('EFECTIVO', 'QR', 'TARJETA')),
+  descuento numeric(10,2) NOT NULL DEFAULT 0,
+  monto_recibido numeric(10,2) NOT NULL DEFAULT 0,
+  cambio numeric(10,2) NOT NULL DEFAULT 0,
   total numeric(10,2) NOT NULL,
   estado varchar(12) NOT NULL DEFAULT 'COMPLETADA' CHECK (estado IN ('COMPLETADA', 'ANULADA'))
 );
@@ -75,6 +78,8 @@ CREATE TABLE IF NOT EXISTS stock_movimientos (
   id_producto integer NOT NULL REFERENCES productos(id_producto),
   tipo_movimiento varchar(10) NOT NULL CHECK (tipo_movimiento IN ('ENTRADA', 'SALIDA', 'AJUSTE', 'ALERTA')),
   cantidad integer NOT NULL,
+  precio_compra numeric(10,2),
+  id_proveedor integer REFERENCES proveedores(id_proveedor),
   motivo varchar(150) NOT NULL,
   observacion varchar(250),
   fecha timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,

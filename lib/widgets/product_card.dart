@@ -11,6 +11,8 @@ class ProductCard extends StatelessWidget {
     required this.lowStock,
     this.imagen,
     this.onAdd,
+    this.onEdit,
+    this.onStock,
   });
 
   final String nombre;
@@ -21,6 +23,8 @@ class ProductCard extends StatelessWidget {
   final bool lowStock;
   final String? imagen;
   final VoidCallback? onAdd;
+  final VoidCallback? onEdit;
+  final VoidCallback? onStock;
 
   @override
   Widget build(BuildContext context) {
@@ -119,8 +123,11 @@ class ProductCard extends StatelessWidget {
                 const SizedBox(height: 12),
                 const Divider(color: Color(0xFFE3E8EF)),
                 const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  runAlignment: WrapAlignment.center,
+                  spacing: 8,
+                  runSpacing: 4,
                   children: [
                     Text(
                       stock,
@@ -136,13 +143,41 @@ class ProductCard extends StatelessWidget {
                       precio,
                       style: const TextStyle(
                         color: Color(0xFF3B82F6),
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
                   ],
                 ),
-                if (onAdd != null) ...[
+                if (onEdit != null || onStock != null) ...[
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      if (onEdit != null)
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: onEdit,
+                            icon: const Icon(Icons.edit_outlined, size: 16),
+                            label: const Text('Editar'),
+                          ),
+                        ),
+                      if (onEdit != null && onStock != null)
+                        const SizedBox(width: 8),
+                      if (onStock != null)
+                        Expanded(
+                          child: FilledButton.icon(
+                            onPressed: onStock,
+                            icon: const Icon(Icons.add_box_outlined, size: 16),
+                            label: const Text('+ Stock'),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: const Color(0xFF16A34A),
+                              foregroundColor: Colors.white,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ] else if (onAdd != null) ...[
                   const SizedBox(height: 8),
                   SizedBox(
                     width: double.infinity,

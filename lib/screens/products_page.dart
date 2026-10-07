@@ -5,9 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/api_client.dart';
 import '../services/server_config.dart';
+import '../utils/input_rules.dart';
 
 class ProductsPage extends StatefulWidget {
-  const ProductsPage({super.key});
+  const ProductsPage({super.key, this.editProductId, this.openCreate = false});
+
+  final int? editProductId;
+  final bool openCreate;
+
   @override
   State<ProductsPage> createState() => _ProductsPageState();
 }
@@ -30,6 +35,29 @@ class _ProductsPageState extends State<ProductsPage> {
   void initState() {
     super.initState();
     _future = fetchProducts();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+
+      if (widget.openCreate) {
+        await _showCreateDialog();
+        return;
+      }
+
+      final editId = widget.editProductId;
+      if (editId == null) return;
+
+      try {
+        final products = await _future;
+        if (!mounted) return;
+        for (final product in products) {
+          if (product.id == editId) {
+            await _showEditDialog(product);
+            break;
+          }
+        }
+      } catch (_) {}
+    });
   }
 
   @override
@@ -294,12 +322,14 @@ class _ProductsPageState extends State<ProductsPage> {
                 children: [
                   TextFormField(
                     decoration: const InputDecoration(labelText: 'Nombre'),
+                    inputFormatters: InputRules.productText,
                     onSaved: (v) => nombre = v?.trim() ?? '',
                     validator: (v) =>
                         (v == null || v.trim().isEmpty) ? 'Requerido' : null,
                   ),
                   TextFormField(
                     decoration: const InputDecoration(labelText: 'Marca'),
+                    inputFormatters: InputRules.productText,
                     onSaved: (v) => marca = v?.trim() ?? '',
                   ),
                   Row(
@@ -391,6 +421,7 @@ class _ProductsPageState extends State<ProductsPage> {
                     keyboardType: TextInputType.numberWithOptions(
                       decimal: true,
                     ),
+                    inputFormatters: InputRules.money,
                     onSaved: (v) => precioCompra = v?.trim() ?? '0',
                   ),
                   TextFormField(
@@ -400,11 +431,13 @@ class _ProductsPageState extends State<ProductsPage> {
                     keyboardType: TextInputType.numberWithOptions(
                       decimal: true,
                     ),
+                    inputFormatters: InputRules.money,
                     onSaved: (v) => precio = v?.trim() ?? '0',
                   ),
                   TextFormField(
                     decoration: const InputDecoration(labelText: 'Stock'),
                     keyboardType: TextInputType.number,
+                    inputFormatters: InputRules.digits,
                     onSaved: (v) => stock = v?.trim() ?? '0',
                   ),
                   TextFormField(
@@ -412,6 +445,7 @@ class _ProductsPageState extends State<ProductsPage> {
                       labelText: 'Stock mínimo',
                     ),
                     keyboardType: TextInputType.number,
+                    inputFormatters: InputRules.digits,
                     onSaved: (v) => stockMinimo = v?.trim() ?? '0',
                   ),
                   const SizedBox(height: 8),
@@ -571,12 +605,14 @@ class _ProductsPageState extends State<ProductsPage> {
                   TextFormField(
                     controller: nombreCtrl,
                     decoration: const InputDecoration(labelText: 'Nombre'),
+                    inputFormatters: InputRules.productText,
                     validator: (v) =>
                         (v == null || v.trim().isEmpty) ? 'Requerido' : null,
                   ),
                   TextFormField(
                     controller: marcaCtrl,
                     decoration: const InputDecoration(labelText: 'Marca'),
+                    inputFormatters: InputRules.productText,
                   ),
                   TextFormField(
                     controller: precioCompraCtrl,
@@ -586,6 +622,7 @@ class _ProductsPageState extends State<ProductsPage> {
                     keyboardType: TextInputType.numberWithOptions(
                       decimal: true,
                     ),
+                    inputFormatters: InputRules.money,
                   ),
                   TextFormField(
                     controller: precioCtrl,
@@ -595,11 +632,16 @@ class _ProductsPageState extends State<ProductsPage> {
                     keyboardType: TextInputType.numberWithOptions(
                       decimal: true,
                     ),
+                    inputFormatters: InputRules.money,
                   ),
                   TextFormField(
                     controller: stockCtrl,
-                    decoration: const InputDecoration(labelText: 'Stock'),
-                    keyboardType: TextInputType.number,
+                    readOnly: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Stock actual',
+                      helperText: 'Para cambiarlo usa el botón + Stock',
+                      prefixIcon: Icon(Icons.inventory_2_outlined),
+                    ),
                   ),
                   TextFormField(
                     controller: stockMinimoCtrl,
@@ -607,6 +649,7 @@ class _ProductsPageState extends State<ProductsPage> {
                       labelText: 'Stock mínimo',
                     ),
                     keyboardType: TextInputType.number,
+                    inputFormatters: InputRules.digits,
                   ),
                   const SizedBox(height: 8),
                   Row(
@@ -707,7 +750,6 @@ class _ProductsPageState extends State<ProductsPage> {
                   final marca = marcaCtrl.text.trim();
                   final precioCompra = precioCompraCtrl.text.trim();
                   final precio = precioCtrl.text.trim();
-                  final stock = stockCtrl.text.trim();
                   final stockMinimo = stockMinimoCtrl.text.trim();
                   final imagen = imagenCtrl.text.trim();
                   final editado = Product(
@@ -718,7 +760,7 @@ class _ProductsPageState extends State<ProductsPage> {
                         ? p.precioCompra
                         : precioCompra,
                     precioVenta: precio.isEmpty ? p.precioVenta : precio,
-                    stock: int.tryParse(stock) ?? p.stock,
+                    stock: p.stock,
                     stockMinimo: int.tryParse(stockMinimo) ?? p.stockMinimo,
                     idProveedor: p.idProveedor,
                     idCategoria: p.idCategoria,
@@ -779,6 +821,7 @@ class _ProductsPageState extends State<ProductsPage> {
                 TextFormField(
                   controller: nombreCtrl,
                   decoration: const InputDecoration(labelText: 'Nombre'),
+                  inputFormatters: InputRules.personName,
                   validator: (v) =>
                       (v == null || v.trim().isEmpty) ? 'Requerido' : null,
                 ),
@@ -787,6 +830,8 @@ class _ProductsPageState extends State<ProductsPage> {
                   decoration: const InputDecoration(
                     labelText: 'Teléfono (opcional)',
                   ),
+                  keyboardType: TextInputType.phone,
+                  inputFormatters: InputRules.digits,
                 ),
                 TextFormField(
                   controller: correoCtrl,
@@ -856,6 +901,7 @@ class _ProductsPageState extends State<ProductsPage> {
                 TextFormField(
                   controller: nombreCtrl,
                   decoration: const InputDecoration(labelText: 'Nombre'),
+                  inputFormatters: InputRules.productText,
                   validator: (v) =>
                       (v == null || v.trim().isEmpty) ? 'Requerido' : null,
                 ),

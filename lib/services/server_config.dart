@@ -15,6 +15,9 @@ class ServerConfig {
   static const cloudPort = 443;
   static const cloudHttps = true;
 
+  static const localLanHost = '192.168.1.8';
+  static const localPort = 8000;
+
   String host = _defaultHost();
   int port = _defaultPort();
   bool enableHttps = _defaultHttps();
@@ -25,12 +28,19 @@ class ServerConfig {
 
   /// Host por defecto según plataforma.
   static String _defaultHost() {
-    return cloudHost;
+    return localHostForPlatform();
   }
 
-  static int _defaultPort() => cloudPort;
+  static int _defaultPort() => localPort;
 
-  static bool _defaultHttps() => cloudHttps;
+  static bool _defaultHttps() => false;
+
+  /// Dirección local de la API según el dispositivo.
+  /// En Android, localhost sería el propio teléfono, por eso usa la IP LAN.
+  static String localHostForPlatform() {
+    if (Platform.isAndroid || Platform.isIOS) return localLanHost;
+    return '127.0.0.1';
+  }
 
   Map<String, dynamic> toJson() => {
     'host': host,
@@ -48,29 +58,26 @@ String apiBaseUrl() {
 /// Carga la configuración guardada al inicio de la app.
 Future<void> initServerConfig() async {
   final cfg = ServerConfig();
+  File? configFile;
+
   try {
     final dir = await paths.getApplicationDocumentsDirectory();
-    final file = File('$dir/lubricantes_arca_config.json');
-    if (await file.exists()) {
-      final map = jsonDecode(await file.readAsString()) as Map<String, dynamic>;
+    configFile = File('$dir/lubricantes_arca_config.json');
+
+    if (await configFile.exists()) {
+      final map =
+          jsonDecode(await configFile.readAsString()) as Map<String, dynamic>;
       final savedHost = map['host'] as String?;
       final savedPort = map['port'] as int?;
       final savedHttps = map['enableHttps'] as bool?;
 
-      // Las versiones anteriores guardaban la IP local o una URL temporal de
-      // Cloudflare. Se reemplazan una sola vez por Render para que el usuario
-      // no tenga que reconfigurar cada dispositivo.
+      // Las URLs temporales de Cloudflare se reemplazan por Render.
       final isLegacyServer =
-          savedHost == null ||
-          savedHost == 'localhost' ||
-          savedHost == '127.0.0.1' ||
-          savedHost == '192.168.1.8' ||
-          savedHost.endsWith('.trycloudflare.com');
+          savedHost == null || savedHost.endsWith('.trycloudflare.com');
       if (isLegacyServer) {
         cfg.host = ServerConfig.cloudHost;
         cfg.port = ServerConfig.cloudPort;
         cfg.enableHttps = ServerConfig.cloudHttps;
-        await file.writeAsString(jsonEncode(cfg.toJson()));
       } else {
         cfg.host = savedHost;
         cfg.port = savedPort ?? cfg.port;
@@ -78,8 +85,38 @@ Future<void> initServerConfig() async {
       }
     }
   } catch (_) {
-    // Sin acceso a documentos (p.ej. web): se usan los valores por defecto.
+    // Si no se puede leer Documentos, se intenta con la configuración base.
   }
+
+  // Si el servidor configurado (por ejemplo Render) está caído, prueba
+  // automáticamente la API local conectada a MySQL.
+  final configuredOk = await testServerConnectionWith(
+    host: cfg.host,
+    port: cfg.port,
+    enableHttps: cfg.enableHttps,
+  );
+
+  if (!configuredOk) {
+    final localHost = ServerConfig.localHostForPlatform();
+    final localOk = await testServerConnectionWith(
+      host: localHost,
+      port: ServerConfig.localPort,
+      enableHttps: false,
+    );
+
+    if (localOk) {
+      cfg.host = localHost;
+      cfg.port = ServerConfig.localPort;
+      cfg.enableHttps = false;
+
+      try {
+        await configFile?.writeAsString(jsonEncode(cfg.toJson()));
+      } catch (_) {
+        // La configuración local funciona aunque no se pueda persistir.
+      }
+    }
+  }
+
   ServerConfig.instance = cfg;
 }
 

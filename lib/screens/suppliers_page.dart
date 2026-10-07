@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_client.dart';
+import '../utils/input_rules.dart';
 
 class SuppliersPage extends StatefulWidget {
   const SuppliersPage({super.key});
@@ -78,6 +79,7 @@ class _SuppliersPageState extends State<SuppliersPage> {
               children: [
                 TextFormField(
                   decoration: const InputDecoration(labelText: 'Nombre'),
+                  inputFormatters: InputRules.personName,
                   onSaved: (v) => nombre = v?.trim() ?? '',
                   validator: (v) =>
                       (v == null || v.trim().isEmpty) ? 'Requerido' : null,
@@ -85,6 +87,7 @@ class _SuppliersPageState extends State<SuppliersPage> {
                 TextFormField(
                   decoration: const InputDecoration(labelText: 'Teléfono'),
                   keyboardType: TextInputType.phone,
+                  inputFormatters: InputRules.digits,
                   onSaved: (v) => telefono = v?.trim() ?? '',
                 ),
                 TextFormField(

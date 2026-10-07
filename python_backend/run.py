@@ -19,6 +19,9 @@ if getattr(sys, 'frozen', False):
 else:
     _BASE = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(_BASE, '.env'))
+_local_env = os.path.join(_BASE, '.env.local')
+if os.path.exists(_local_env):
+    load_dotenv(_local_env, override=True)
 load_dotenv()  # fallback desde el directorio de trabajo
 
 import uvicorn  # noqa: E402

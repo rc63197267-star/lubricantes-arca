@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/api_client.dart';
+import '../../utils/input_rules.dart';
 
 class ClientsScreen extends StatefulWidget {
   const ClientsScreen({super.key});
@@ -340,6 +341,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
               children: [
                 TextFormField(
                   decoration: const InputDecoration(labelText: 'Nombre'),
+                  inputFormatters: InputRules.personName,
                   onSaved: (v) => nombre = v?.trim() ?? '',
                   validator: (v) =>
                       (v == null || v.trim().isEmpty) ? 'Requerido' : null,
@@ -347,6 +349,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
                 TextFormField(
                   decoration: const InputDecoration(labelText: 'Teléfono'),
                   keyboardType: TextInputType.phone,
+                  inputFormatters: InputRules.digits,
                   onSaved: (v) => telefono = v?.trim() ?? '',
                 ),
                 TextFormField(

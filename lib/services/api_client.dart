@@ -7,6 +7,7 @@ String _baseHost() => apiBaseUrl();
 
 class Product {
   final int id;
+  final String codigo;
   final String nombre;
   final String? marca;
   final String precioCompra;
@@ -19,6 +20,7 @@ class Product {
 
   Product({
     required this.id,
+    this.codigo = '',
     required this.nombre,
     this.marca,
     this.precioCompra = '0',
@@ -32,6 +34,7 @@ class Product {
 
   factory Product.fromJson(Map<String, dynamic> j) => Product(
     id: j['id_producto'] as int,
+    codigo: j['codigo']?.toString() ?? '',
     nombre: j['nombre'] as String,
     marca: j['marca'] as String?,
     precioCompra: j['precio_compra']?.toString() ?? '0',
@@ -42,13 +45,25 @@ class Product {
     stockMinimo: j['stock_minimo'] == null
         ? 0
         : (j['stock_minimo'] is int)
-            ? j['stock_minimo'] as int
-            : int.parse(j['stock_minimo'].toString()),
+        ? j['stock_minimo'] as int
+        : int.parse(j['stock_minimo'].toString()),
+    idProveedor: j['id_proveedor'] == null
+        ? 1
+        : (j['id_proveedor'] is int)
+        ? j['id_proveedor'] as int
+        : int.parse(j['id_proveedor'].toString()),
+    idCategoria: j['id_categoria'] == null
+        ? 1
+        : (j['id_categoria'] is int)
+        ? j['id_categoria'] as int
+        : int.parse(j['id_categoria'].toString()),
     imagen: j['imagen'] as String?,
   );
 
   Map<String, dynamic> toJsonCreate() => {
-    'codigo': 'GEN${DateTime.now().millisecondsSinceEpoch}',
+    'codigo': codigo.isEmpty
+        ? 'GEN${DateTime.now().millisecondsSinceEpoch}'
+        : codigo,
     'id_categoria': idCategoria,
     'id_proveedor': idProveedor,
     'nombre': nombre,
@@ -114,7 +129,10 @@ Future<void> deleteProduct(int id) async {
 
 /// Sube una imagen (en base64) al servidor y devuelve la ruta relativa
 /// que se guarda en el producto, ej: /uploads/abc123.jpg
-Future<String?> uploadProductImage(String base64Data, {String? filename}) async {
+Future<String?> uploadProductImage(
+  String base64Data, {
+  String? filename,
+}) async {
   final host = _baseHost();
   final res = await http.post(
     Uri.parse('$host/upload'),
@@ -144,21 +162,21 @@ class Client {
   });
 
   factory Client.fromJson(Map<String, dynamic> j) => Client(
-        id: j['id_cliente'] as int,
-        nombre: j['nombre'] as String,
-        telefono: j['telefono'] as String?,
-        correo: j['correo'] as String?,
-        direccion: j['direccion'] as String?,
-        estado: j['estado']?.toString() ?? 'ACTIVO',
-      );
+    id: j['id_cliente'] as int,
+    nombre: j['nombre'] as String,
+    telefono: j['telefono'] as String?,
+    correo: j['correo'] as String?,
+    direccion: j['direccion'] as String?,
+    estado: j['estado']?.toString() ?? 'ACTIVO',
+  );
 
   Map<String, dynamic> toJsonCreate() => {
-        'nombre': nombre,
-        'telefono': telefono,
-        'correo': correo,
-        'direccion': direccion,
-        'estado': estado,
-      };
+    'nombre': nombre,
+    'telefono': telefono,
+    'correo': correo,
+    'direccion': direccion,
+    'estado': estado,
+  };
 }
 
 Future<List<Client>> fetchClients() async {
@@ -181,8 +199,6 @@ Future<int> createClient(Client c) async {
   final js = jsonDecode(res.body) as Map<String, dynamic>;
   return js['id_cliente'] as int;
 }
-
-
 
 class Supplier {
   final int id;
@@ -239,6 +255,7 @@ Future<int> createSupplier(Supplier s) async {
   final js = jsonDecode(res.body) as Map<String, dynamic>;
   return js['id_proveedor'] as int;
 }
+
 class Sale {
   final int id;
   final String numero;
@@ -246,6 +263,9 @@ class Sale {
   final String cliente;
   final String fecha;
   final String metodoPago;
+  final String descuento;
+  final String montoRecibido;
+  final String cambio;
   final String total;
   final String estado;
   final String? productos;
@@ -257,22 +277,28 @@ class Sale {
     required this.cliente,
     required this.fecha,
     required this.metodoPago,
+    this.descuento = '0',
+    this.montoRecibido = '0',
+    this.cambio = '0',
     required this.total,
     required this.estado,
     this.productos,
   });
 
   factory Sale.fromJson(Map<String, dynamic> j) => Sale(
-        id: j['id_venta'] as int,
-        numero: j['numero_venta'] as String,
-        idCliente: j['id_cliente'] as int,
-        cliente: j['cliente'] as String,
-        fecha: j['fecha']?.toString() ?? '',
-        metodoPago: j['metodo_pago']?.toString() ?? '',
-        total: j['total']?.toString() ?? '0',
-        estado: j['estado']?.toString() ?? '',
-        productos: j['productos'] as String?,
-      );
+    id: j['id_venta'] as int,
+    numero: j['numero_venta'] as String,
+    idCliente: j['id_cliente'] as int,
+    cliente: j['cliente'] as String,
+    fecha: j['fecha']?.toString() ?? '',
+    metodoPago: j['metodo_pago']?.toString() ?? '',
+    descuento: j['descuento']?.toString() ?? '0',
+    montoRecibido: j['monto_recibido']?.toString() ?? '0',
+    cambio: j['cambio']?.toString() ?? '0',
+    total: j['total']?.toString() ?? '0',
+    estado: j['estado']?.toString() ?? '',
+    productos: j['productos'] as String?,
+  );
 }
 
 Future<List<Sale>> fetchSales() async {
@@ -288,6 +314,8 @@ Future<int> createSale(Sale sale, List<Map<String, dynamic>> items) async {
   final body = jsonEncode({
     'id_cliente': sale.idCliente,
     'metodo_pago': sale.metodoPago,
+    'descuento': double.tryParse(sale.descuento) ?? 0,
+    'monto_recibido': double.tryParse(sale.montoRecibido) ?? 0,
     'total': double.tryParse(sale.total) ?? 0,
     'items': items,
   });
@@ -300,12 +328,16 @@ Future<int> createSale(Sale sale, List<Map<String, dynamic>> items) async {
   final js = jsonDecode(res.body) as Map<String, dynamic>;
   return js['id_venta'] as int;
 }
+
 class Movimiento {
   final int id;
   final int idProducto;
   final String producto;
   final String tipo;
   final int cantidad;
+  final String? precioCompra;
+  final int? idProveedor;
+  final String? proveedor;
   final String motivo;
   final String? observacion;
   final String fecha;
@@ -318,6 +350,9 @@ class Movimiento {
     required this.producto,
     required this.tipo,
     required this.cantidad,
+    this.precioCompra,
+    this.idProveedor,
+    this.proveedor,
     required this.motivo,
     this.observacion,
     required this.fecha,
@@ -326,17 +361,20 @@ class Movimiento {
   });
 
   factory Movimiento.fromJson(Map<String, dynamic> j) => Movimiento(
-        id: j['id_movimiento'] as int,
-        idProducto: j['id_producto'] as int,
-        producto: j['producto'] as String,
-        tipo: j['tipo_movimiento'] as String,
-        cantidad: j['cantidad'] as int,
-        motivo: j['motivo'] as String,
-        observacion: j['observacion'] as String?,
-        fecha: j['fecha']?.toString() ?? '',
-        stockAnterior: j['stock_anterior'] as int?,
-        stockNuevo: j['stock_nuevo'] as int?,
-      );
+    id: j['id_movimiento'] as int,
+    idProducto: j['id_producto'] as int,
+    producto: j['producto'] as String,
+    tipo: j['tipo_movimiento'] as String,
+    cantidad: j['cantidad'] as int,
+    precioCompra: j['precio_compra']?.toString(),
+    idProveedor: j['id_proveedor'] as int?,
+    proveedor: j['proveedor'] as String?,
+    motivo: j['motivo'] as String,
+    observacion: j['observacion'] as String?,
+    fecha: j['fecha']?.toString() ?? '',
+    stockAnterior: j['stock_anterior'] as int?,
+    stockNuevo: j['stock_nuevo'] as int?,
+  );
 }
 
 Future<List<Movimiento>> fetchMovimientos() async {
@@ -344,21 +382,29 @@ Future<List<Movimiento>> fetchMovimientos() async {
   final res = await http.get(Uri.parse('$host/movimientos'));
   if (res.statusCode != 200) throw Exception('Error ${res.statusCode}');
   final data = jsonDecode(res.body) as List;
-  return data.map((e) => Movimiento.fromJson(e as Map<String, dynamic>)).toList();
+  return data
+      .map((e) => Movimiento.fromJson(e as Map<String, dynamic>))
+      .toList();
 }
 
 Future<int> createMovimiento({
   required int idProducto,
   required String tipo,
   required int cantidad,
+  double? precioCompra,
+  int? idProveedor,
   String? motivo,
+  String? observacion,
 }) async {
   final host = _baseHost();
   final body = jsonEncode({
     'id_producto': idProducto,
     'tipo_movimiento': tipo,
     'cantidad': cantidad,
+    'precio_compra': precioCompra,
+    'id_proveedor': idProveedor,
     'motivo': motivo ?? '',
+    'observacion': observacion,
   });
   final res = await http.post(
     Uri.parse('$host/movimientos'),
@@ -369,6 +415,7 @@ Future<int> createMovimiento({
   final js = jsonDecode(res.body) as Map<String, dynamic>;
   return js['id_movimiento'] as int;
 }
+
 class Categoria {
   final int id;
   final String nombre;
@@ -383,17 +430,17 @@ class Categoria {
   });
 
   factory Categoria.fromJson(Map<String, dynamic> j) => Categoria(
-        id: j['id_categoria'] as int,
-        nombre: j['nombre'] as String,
-        descripcion: j['descripcion'] as String?,
-        estado: j['estado']?.toString() ?? 'ACTIVO',
-      );
+    id: j['id_categoria'] as int,
+    nombre: j['nombre'] as String,
+    descripcion: j['descripcion'] as String?,
+    estado: j['estado']?.toString() ?? 'ACTIVO',
+  );
 
   Map<String, dynamic> toJsonCreate() => {
-        'nombre': nombre,
-        'descripcion': descripcion,
-        'estado': estado,
-      };
+    'nombre': nombre,
+    'descripcion': descripcion,
+    'estado': estado,
+  };
 }
 
 Future<List<Categoria>> fetchCategorias() async {
@@ -401,7 +448,9 @@ Future<List<Categoria>> fetchCategorias() async {
   final res = await http.get(Uri.parse('$host/categorias'));
   if (res.statusCode != 200) throw Exception('Error ${res.statusCode}');
   final data = jsonDecode(res.body) as List;
-  return data.map((e) => Categoria.fromJson(e as Map<String, dynamic>)).toList();
+  return data
+      .map((e) => Categoria.fromJson(e as Map<String, dynamic>))
+      .toList();
 }
 
 Future<int> createCategoria(Categoria c) async {
@@ -416,6 +465,7 @@ Future<int> createCategoria(Categoria c) async {
   final js = jsonDecode(res.body) as Map<String, dynamic>;
   return js['id_categoria'] as int;
 }
+
 String fullImageUrl(String? imagen) {
   if (imagen == null || imagen.isEmpty) return '';
   if (imagen.startsWith('http')) return imagen;
@@ -437,6 +487,7 @@ Future<String> uploadImage({
   final js = jsonDecode(res.body) as Map<String, dynamic>;
   return js['url'] as String;
 }
+
 Usuario? usuarioActual;
 
 class Usuario {
@@ -455,12 +506,12 @@ class Usuario {
   });
 
   factory Usuario.fromJson(Map<String, dynamic> j) => Usuario(
-        id: j['id_usuario'] as int,
-        nombre: j['nombre'] as String,
-        usuario: j['usuario'] as String,
-        rol: j['rol']?.toString() ?? 'VENDEDOR',
-        estado: j['estado']?.toString() ?? 'ACTIVO',
-      );
+    id: j['id_usuario'] as int,
+    nombre: j['nombre'] as String,
+    usuario: j['usuario'] as String,
+    rol: j['rol']?.toString() ?? 'VENDEDOR',
+    estado: j['estado']?.toString() ?? 'ACTIVO',
+  );
 
   bool get esAdmin => rol == 'ADMIN';
 }
