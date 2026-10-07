@@ -69,30 +69,6 @@ class Sidebar extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 26),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 15),
-            margin: const EdgeInsets.only(bottom: 18),
-            decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.add, color: Colors.white),
-                SizedBox(width: 8),
-                Text(
-                  'Agregar producto',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16,
-                  ),
-                ),
-              ],
-            ),
-          ),
           Expanded(
             child: ListView.builder(
               itemCount: items.length,
